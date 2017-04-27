@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Veracross Score Reminder
-// @namespace    http://tampermonkey.net/
+// @namespace    https://github.com/emowen/
 // @version      2
 // @description  Check the update of score in Veracross periodically.
 // @homepage     https://github.com/emowen/Veracross-Score-Reminder

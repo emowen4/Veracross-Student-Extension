@@ -5,7 +5,7 @@
 // @description  Check the update of score in Veracross periodically.
 // @homepage     https://github.com/emowen/Veracross-Score-Reminder
 // @author       EmOwen4
-// @updateURL    https://github.com/emowen/Veracross-Score-Reminder/blob/master/Veracross-Score-Reminder.js
+// @updateURL    https://github.com/emowen/Veracross-Score-Reminder/blob/master/meta.js
 // @downloadURL  https://github.com/emowen/Veracross-Score-Reminder/blob/master/Veracross-Score-Reminder.js
 // @match        https://portals.veracross.com/*/student
 // @match        https://portals.veracross.com/*/student?id=*

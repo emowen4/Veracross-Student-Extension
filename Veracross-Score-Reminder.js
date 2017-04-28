@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Veracross Score Reminder
 // @namespace    https://github.com/emowen/
-// @version      2
+// @version      2.1
 // @description  Check the update of score in Veracross periodically.
 // @homepage     https://github.com/emowen/Veracross-Score-Reminder
 // @author       EmOwen4
@@ -169,11 +169,22 @@
 
     function createSettingDiv() {
 
+        function addCss(css){
+            var head = document.getElementsByTagName('head')[0];
+            var s = document.createElement('style');
+            s.setAttribute('type', 'text/css');
+            if (s.styleSheet) {
+                s.styleSheet.cssText = css;
+            } else {
+                s.appendChild(document.createTextNode(css));
+            }
+            head.appendChild(s);
+        }
+
         function addSetting(container, label, editor, desc) {
-            let line = document.createElement('li');
-            let labelNode = document.createElement('label');
+            let line = element('li');
+            let labelNode = element('label');
             labelNode.textContent = label;
-            if (desc) labelNode.title = desc;
             line.appendChild(labelNode);
             if (typeof editor === 'string')
                 line.innerHtml += editor;
@@ -181,72 +192,114 @@
                 line.appendChild(editor);
             else
                 console.log('Unknown type of editor');
+            if (desc) {
+                labelNode.title = desc;
+                let descNode = element('label');
+                descNode.textContent = desc;
+                line.appendChild(descNode);
+            }
             container.appendChild(line);
         }
 
-        function input(id, type) {
-            let ret = document.createElement('input');
-            ret.type = type;
-            ret.id = id;
-            return ret;
-        }
+        function element(tag, id) { let ret = document.createElement(tag); ret.classList.add('vsr'); if (id) ret.id = id; return ret; }
+
+        function input(id, type) { let ret = element('input', id); ret.type = type; return ret; }
+
+        function button(text, onclick) { let ret = element('button'); ret.type = 'button'; ret.textContent = text; ret.onclick = onclick; return ret; }
 
         if ($('#veracross-score-reminder-settings').length === 0) {
-            let div_setting = document.createElement('div');
+            addCss(
+`
+.vsr {
+    font-weight: normal;
+    background-image: none;
+}
+
+div.vsr {
+    border-radius: 5px;
+    padding: 20px;
+    text-align: center;
+    margin: auto;
+    margin-bottom: 10px;
+}
+
+label.vsr {
+    font-size: 14px;
+}
+
+input.vsr[type=text], input.vsr[type=number], select.vsr {
+    width: 150px;
+    padding: 4px 10px;
+    margin: 4px 0;
+    display: inline-flex;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    box-sizing: border-box;
+}
+
+input.vsr[type=checkbox] {
+}
+
+button.vsr[type=button] {
+    width: 100px;
+    background-color: #3B5A91;
+    color: white;
+    padding: 4px 2px;
+    margin: 2px 0;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+button.vsr[type=button]:hover {
+    background-image: none;
+}
+
+table.vsr {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th.vsr, td.vsr {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+tr.vsr:hover{background-color:#f5f5f5}
+`);
+            let div_setting = element('div');
             div_setting.id = 'veracross-score-reminder-settings';
             div_setting.className += ' content scrollable student-homepage';
             div_setting.style.display = 'none';
             div_setting.style.backgroundColor = 'rgba(255,255,255,100)';
-            let header = document.createElement('div');
-            header.appendChild((function() {
-                let child = document.createElement('button');
-                child.type = 'button';
-                child.textContent = 'Clear All Data';
-                child.onclick = function() {
-                    if (confirm('Are you sure to clear all the data including all the settings?')) {
-                        clearAllData();
-                        location.reload();
-                    }
-                };
-                return child;
-            })());
-            header.appendChild((function() {
-                let child = document.createElement('button');
-                child.type = 'button';
-                child.textContent = 'Default';
-                child.onclick = function() {
-                    $('#vsr-reload-interval').prop('value', 300);
-                    $('#vsr-only-new-updates').prop('checked', true);
-                    $('#vsr-show-notification').prop('checked', true);
-                };
-                return child;
-            })());
-            header.appendChild((function() {
-                let child = document.createElement('button');
-                child.type = 'button';
-                child.textContent = 'Save';
-                child.onclick = function() {
-                    onlyNewUpdates = $('#vsr-only-new-updates').is(':checked');
-                    showNotification = $('#vsr-show-notification').is(':checked');
-                    SetValue('ReloadingInterval', Math.floor($('#vsr-reload-interval').attr('value') * 1000));
-                    SetValue('OnlyNewUpdates', toStr(onlyNewUpdates));
-                    SetValue('ShowNotification', toStr(showNotification));
-                    if (confirm('Require reloading the page to apply new settings. Reloading now?')) location.reload();
-                };
-                return child;
-            })());
-            header.appendChild((function() {
-                let child = document.createElement('button');
-                child.type = 'button';
-                child.textContent = 'Close';
-                child.onclick = function() {
-                    $('#veracross-score-reminder-settings').hide();
-                    $('#portal-homepage').show();
-                };
-                return child;
-            })());
+            div_setting.style.margin = '0 auto';
+            let header = element('div');
+            header.style.width = '100%';
+            header.appendChild(button('Clear All Data', function() {
+                if (confirm('Are you sure to clear all the data including all the settings?')) {
+                    clearAllData();
+                    location.reload();
+                }
+            }));
+            header.appendChild(button('Default', function() {
+                $('#vsr-reload-interval').prop('value', 300);
+                $('#vsr-only-new-updates').prop('checked', true);
+                $('#vsr-show-notification').prop('checked', true);
+            }));
+            header.appendChild(button('Save', function() {
+                onlyNewUpdates = $('#vsr-only-new-updates').is(':checked');
+                showNotification = $('#vsr-show-notification').is(':checked');
+                SetValue('ReloadingInterval', Math.floor($('#vsr-reload-interval').attr('value') * 1000));
+                SetValue('OnlyNewUpdates', toStr(onlyNewUpdates));
+                SetValue('ShowNotification', toStr(showNotification));
+                if (confirm('Require reloading the page to apply new settings. Reloading now?')) location.reload();
+            }));
+            header.appendChild(button('Close', function() {
+                $('#veracross-score-reminder-settings').hide();
+                $('#portal-homepage').show();
+            }));
             div_setting.appendChild(header);
-            let settingForm = document.createElement('ul');
+            let settingForm = element('ul');
             addSetting(settingForm, 'Reload Interval (seconds): ',
                        (function() { let ret = input('vsr-reload-interval', 'number'); ret.step = '1'; ret.value = (GetValue('ReloadingInterval', 5 * 60 * 1000) / 1000); return ret; })());
             addSetting(settingForm, 'Only Show New Updates: ',

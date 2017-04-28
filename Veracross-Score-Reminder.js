@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Veracross Score Reminder
 // @namespace    https://github.com/emowen/
-// @version      2.1
+// @version      2.2
 // @description  Check the update of score in Veracross periodically.
 // @homepage     https://github.com/emowen/Veracross-Score-Reminder
 // @author       EmOwen4
@@ -182,19 +182,26 @@
         }
 
         function addSetting(container, label, editor, desc) {
-            let line = element('li');
-            let labelNode = element('label');
+            let line = element('tr');
+            let labelNode = element('th');
             labelNode.textContent = label;
             line.appendChild(labelNode);
+            let editorNode = element('td');
             if (typeof editor === 'string')
-                line.innerHtml += editor;
+                editorNode.innerHtml = editor;
             else if (editor instanceof HTMLElement)
-                line.appendChild(editor);
+                editorNode.appendChild(editor);
             else
                 console.log('Unknown type of editor');
+            let labelFor = element('label');
+            labelFor.htmlFor = editorNode.children[0].id;
+            labelFor.classList.add('vsr-label');
+            labelFor.textContent = ' ';
+            editorNode.appendChild(labelFor);
+            line.appendChild(editorNode);
             if (desc) {
                 labelNode.title = desc;
-                let descNode = element('label');
+                let descNode = element('td');
                 descNode.textContent = desc;
                 line.appendChild(descNode);
             }
@@ -208,65 +215,96 @@
         function button(text, onclick) { let ret = element('button'); ret.type = 'button'; ret.textContent = text; ret.onclick = onclick; return ret; }
 
         if ($('#veracross-score-reminder-settings').length === 0) {
-            addCss(
-`
+            if (addCss) {
+                addCss(
+                    `
 .vsr {
-    font-weight: normal;
-    background-image: none;
+font-weight: normal;
+background-image: none;
+}
+
+.vsr:hover {
+background-image: none;
 }
 
 div.vsr {
-    border-radius: 5px;
-    padding: 20px;
-    text-align: center;
-    margin: auto;
-    margin-bottom: 10px;
-}
-
-label.vsr {
-    font-size: 14px;
+border-radius: 5px;
+padding: 20px;
+text-align: center;
+margin: auto;
+margin-bottom: 10px;
 }
 
 input.vsr[type=text], input.vsr[type=number], select.vsr {
-    width: 150px;
-    padding: 4px 10px;
-    margin: 4px 0;
-    display: inline-flex;
-    border: 1px solid #ccc;
-    border-radius: 2px;
-    box-sizing: border-box;
+width: 150px;
+padding: 4px 10px;
+margin: 4px 0;
+display: inline-flex;
+border: 1px solid #ccc;
+border-radius: 2px;
+box-sizing: border-box;
 }
 
-input.vsr[type=checkbox] {
+input[type=checkbox].vsr-checkbox {
+position:absolute; z-index:-1000; left:-1000px; overflow: hidden; clip: rect(0 0 0 0); height:1px; width:1px; margin:-1px; padding:0; border:0;
+}
+
+input[type=checkbox].vsr-checkbox + label.vsr-label {
+padding-left:25px;
+height:20px;
+display:inline-block;
+line-height:20px;
+background-repeat:no-repeat;
+background-position: 0 0;
+font-size:20px;
+vertical-align:middle;
+cursor:pointer;
+
+}
+
+input[type=checkbox].vsr-checkbox:checked + label.vsr-label {
+background-position: 0 -20px;
+}
+label.vsr-label {
+background-image:url(http://csscheckbox.com/checkboxes/u/csscheckbox_5ed3110c2dbfa898cff4fe25b69ceb41.png);
+-webkit-touch-callout: none;
+-webkit-user-select: none;
+-khtml-user-select: none;
+-moz-user-select: none;
+-ms-user-select: none;
+user-select: none;
 }
 
 button.vsr[type=button] {
-    width: 100px;
-    background-color: #3B5A91;
-    color: white;
-    padding: 4px 2px;
-    margin: 2px 0;
-    border-radius: 2px;
-    cursor: pointer;
-}
-
-button.vsr[type=button]:hover {
-    background-image: none;
+width: 100px;
+background-color: #3B5A91;
+color: white;
+padding: 4px 2px;
+margin: 2px 0;
+border-radius: 2px;
+cursor: pointer;
 }
 
 table.vsr {
-    border-collapse: collapse;
-    width: 100%;
+border-collapse: collapse;
+width: 100%;
 }
 
-th.vsr, td.vsr {
-    padding: 8px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
+th.vsr {
+padding: 8px;
+text-align: right;
 }
 
-tr.vsr:hover{background-color:#f5f5f5}
+td.vsr {
+padding: 8px;
+text-align: left;
+}
+
+tr.vsr:hover {
+background-color:#f5f5f5;
+}
 `);
+            }
             let div_setting = element('div');
             div_setting.id = 'veracross-score-reminder-settings';
             div_setting.className += ' content scrollable student-homepage';
@@ -299,14 +337,16 @@ tr.vsr:hover{background-color:#f5f5f5}
                 $('#portal-homepage').show();
             }));
             div_setting.appendChild(header);
-            let settingForm = element('ul');
+            let settingTable = element('table');
+            let settingForm = element('tbody');
+            settingTable.appendChild(settingForm);
             addSetting(settingForm, 'Reload Interval (seconds): ',
                        (function() { let ret = input('vsr-reload-interval', 'number'); ret.step = '1'; ret.value = (GetValue('ReloadingInterval', 5 * 60 * 1000) / 1000); return ret; })());
             addSetting(settingForm, 'Only Show New Updates: ',
-                       (function() { let ret = input('vsr-only-new-updates', 'checkbox'); ret.checked = onlyNewUpdates; return ret; })());
+                       (function() { let ret = input('vsr-only-new-updates', 'checkbox'); ret.classList.add('vsr-checkbox'); ret.checked = onlyNewUpdates; return ret; })());
             addSetting(settingForm, 'Show Notification: ',
-                       (function() { let ret = input('vsr-show-notification', 'checkbox'); ret.checked = showNotification; return ret; })());
-            div_setting.appendChild(settingForm);
+                       (function() { let ret = input('vsr-show-notification', 'checkbox'); ret.classList.add('vsr-checkbox'); ret.checked = showNotification; return ret; })());
+            div_setting.appendChild(settingTable);
             $('#portal-homepage').after(div_setting);
         }
     }

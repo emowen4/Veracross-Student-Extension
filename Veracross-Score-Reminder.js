@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Veracross Score Reminder
 // @namespace    https://github.com/emowen/
-// @version      2.2
+// @version      2.3
 // @description  Check the update of score in Veracross periodically.
 // @homepage     https://github.com/emowen/Veracross-Score-Reminder
 // @author       EmOwen4
@@ -218,15 +218,6 @@
             if (addCss) {
                 addCss(
                     `
-.vsr {
-font-weight: normal;
-background-image: none;
-}
-
-.vsr:hover {
-background-image: none;
-}
-
 div.vsr {
 border-radius: 5px;
 padding: 20px;
@@ -275,7 +266,7 @@ background-image:url(http://csscheckbox.com/checkboxes/u/csscheckbox_5ed3110c2db
 user-select: none;
 }
 
-button.vsr[type=button] {
+button.vsr {
 width: 100px;
 background-color: #3B5A91;
 color: white;
@@ -283,6 +274,13 @@ padding: 4px 2px;
 margin: 2px 0;
 border-radius: 2px;
 cursor: pointer;
+font-weight: normal;
+background-image: none;
+}
+
+button.vsr:hover {
+font-style: italic;
+background-image: none;
 }
 
 table.vsr {

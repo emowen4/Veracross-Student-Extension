@@ -9,8 +9,8 @@ I only test the extension on my account, so if you find any bugs, please contact
 3. Calculate and show the GPA
 
 ### TODO
-[X] Check and notify and grades automatically and periodically
-[X] Calculate the GPA
-[X] Setting panel
-[ ] Automatically adapt the correct GPA rule for specific schools
-[ ] Themes / Skins
+ - [X] Check and notify and grades automatically and periodically
+ - [X] Calculate the GPA
+ - [X] Setting panel
+ - [ ] Automatically adapt the correct GPA rule for specific schools
+ - [ ] Themes / Skins

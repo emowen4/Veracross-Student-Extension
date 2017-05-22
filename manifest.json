@@ -1,0 +1,23 @@
+{
+	"manifest_version": 2,
+	"name": "Veracross Student Extension",
+	"short_name": "VSE",
+	"author": "EmOwen4",
+	"version": "2.0.0",
+	"description": "The extension for Veracross student clients",
+	"icons": { "16": "img/icon16.png",
+			   "32": "img/icon32.png",
+			   "48": "img/icon48.png",
+			   "64": "img/icon64.png",
+			   "96": "img/icon96.png",
+			  "128": "img/icon128.png" },
+	"permissions": ["tabs", "storage", "https://portals.veracross.com/"],
+	"content_scripts":
+	[
+		{
+			"matches": ["https://portals.veracross.com/*/student", "https://portals.veracross.com/*/student?id=*"],
+			"js": ["/js/jquery-3.2.1.min.js", "/js/veracross-student-extensions.js"]
+		}
+	],
+	"web_accessible_resources": ["/img/csscheckbox.png"]
+}

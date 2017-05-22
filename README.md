@@ -1,7 +1,16 @@
-# Veracross-Score-Reminder
-A TamperMonkey script that can automatically update and notify the change of the grades on Veracross.
+# Veracross-Student-Extension
+A Chrome extension for the students who use Veracross.
+The extension can automatically reload the Veracross page, check the grades' updates, and notify the users. It can calculate the GPA, but I get the data from my high school website, so it may not be correct in other schools.
+I only test the extension on my account, so if you find any bugs, please contact me.
 
-### Usage
-1. Copy this this link `https://raw.githubusercontent.com/emowen/Veracross-Score-Reminder/master/Veracross-Score-Reminder.js`
-2. Open TamperMonkey Dashboard -> Utilities -> URL
-3. Paste the link and click `import`
+### What can the extension do
+1. Check the grades' updates automatically
+2. Notify the change of grades
+3. Calculate and show the GPA
+
+### TODO
+[X] Check and notify and grades automatically and periodically
+[X] Calculate the GPA
+[X] Setting panel
+[ ] Automatically adapt the correct GPA rule for specific schools
+[ ] Themes / Skins

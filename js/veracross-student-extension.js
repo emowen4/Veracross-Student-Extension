@@ -8,7 +8,7 @@ function clearSettings() {
         'ReloadingInterval': 5 * 60 * 1000,
         'OnlyNewUpdates': true,
         'ShowNotification': true
-    });
+    }, function() {});
 }
 
 function clearAllData() {
@@ -18,7 +18,7 @@ function clearAllData() {
         'StoredData': []
     }, function() {});
     chrome.storage.onChanged.addListener(function(changes, namespace) {
-        for (key in changes) {
+        for (let key in changes) {
             var storageChange = changes[key];
             console.log('Storage key "%s" in namespace "%s" changed. ' +
                 'Old value was "%s", new value is "%s".',
@@ -55,6 +55,7 @@ function debug() {
 //debug(); // Only use this function when debugging
 
 var lastUpdateCount, storedData, onlyNewUpdates, showNotification, reloadingInterval;
+
 GetValue(null,
     function(items) {
         if (chrome.runtime.lastError) {
@@ -62,7 +63,7 @@ GetValue(null,
             storedData = [];
             onlyNewUpdates = true;
             showNotification = true;
-            reloadingInterval = 5 * 6 * 1000;
+            reloadingInterval = 5 * 60 * 1000;
         } else {
             lastUpdateCount = items['LastUpdateCount'];
             storedData = items['StoredData'];
@@ -84,7 +85,8 @@ function initExtension() {
         updateClassCount = 0;
     var currentData = [];
     var notificationStr = '';
-    var gpaData = {};
+    var totalGPA = 0,
+        gradedClassCount = 0;
     const IND_NAME = 0,
         IND_ID = 1,
         IND_GRADE = 2,
@@ -93,27 +95,23 @@ function initExtension() {
         IND_HONORS = 1,
         IND_REGULAR = 2;
     const GPA_OF_GRADE = [
-        [1.5, 1.7, 1.9, 2.1, 2.3, 2.5, 2.7, 2.9, 3.1, 3.3, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.3, 4.4, 4.5, 4.5, 4.6, 4.6, 4.7, 4.7, 4.8, 4.8, 4.9, 4.9, 4.9],
-        [1.25, 1.45, 1.65, 1.85, 2.05, 2.25, 2.45, 2.65, 2.85, 3.05, 3.25, 3.35, 3.45, 3.55, 3.65, 3.75, 3.85, 3.95, 4.05, 4.15, 4.25, 4.25, 4.35, 4.35, 4.45, 4.45, 4.55, 4.55, 4.65, 4.65, 4.65],
+        [1.5, 1.7, 1.9, 2.1, 2.3, 2.5, 2.7, 2.9, 3.1, 3.3, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.3, 4.4, 4.5, 4.5, 4.6, 4.6, 4.7, 4.7, 4.8, 4.8, 4.9, 4.9, 4.9], // AP
+        [1.25, 1.45, 1.65, 1.85, 2.05, 2.25, 2.45, 2.65, 2.85, 3.05, 3.25, 3.35, 3.45, 3.55, 3.65, 3.75, 3.85, 3.95, 4.05, 4.15, 4.25, 4.25, 4.35, 4.35, 4.45, 4.45, 4.55, 4.55, 4.65, 4.65, 4.65], // Honors
         [1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.0, 4.1, 4.1, 4.2, 4.2, 4.3, 4.3, 4.4, 4.4, 4.4]
-    ];
+    ]; // Regular & Advanced
 
-    function calculateGPA(dict) {
-        let totalGPA = 0;
-        for (var clz in dict) {
-            let ind = -1;
-            if (clz.startsWith('AP')) ind = IND_AP;
-            else if (clz.startsWith('Honors')) ind = IND_HONORS;
-            else ind = IND_REGULAR;
-            let grade = Math.round(dict[clz]) - 70;
-            if (grade >= 0)
-                totalGPA += GPA_OF_GRADE[ind][grade];
-        }
-        return (totalGPA / Object.keys(dict).length).toFixed(2);
+    function calculateGPA(clz, cour_grade) {
+        let ind = -1;
+        if (clz.startsWith('AP')) ind = IND_AP;
+        else if (clz.startsWith('Honors')) ind = IND_HONORS;
+        else ind = IND_REGULAR;
+        let grade = Math.round(cour_grade) - 70;
+        return grade >= 0 ? GPA_OF_GRADE[ind][grade] : 0;
     }
 
     function createList(arr) {
         let li = document.createElement('li');
+        li.title = 'Jump to the class ' + arr[IND_NAME];
         let id = arr[IND_ID];
         li.onclick = function() {
             document.getElementById(id).scrollIntoView();
@@ -313,7 +311,7 @@ background-color:#f5f5f5;
                     'ReloadingInterval': Math.floor(parseFloat(document.getElementById('vsr-reload-interval').value) * 1000),
                     'OnlyNewUpdates': onlyNewUpdates,
                     'ShowNotification': showNotification
-                });
+                }, function() {});
                 if (confirm('Require reloading the page to apply new settings. Reloading now?')) location.reload();
             }));
             header.appendChild(button('Close', function() {
@@ -350,16 +348,22 @@ background-color:#f5f5f5;
     for (let i = 0; i < cours.length; i++) {
         let noti_cnt = Number.parseInt(cours[i].getElementsByClassName('notifications-count')[0].innerText);
         let cour_name = cours[i].getElementsByClassName('class-name')[0].innerText;
-        let cour_grade = 0;
         if (cours[i].getElementsByClassName('numeric-grade').length == 1) {
-            cour_grade = Number.parseFloat(cours[i].getElementsByClassName('numeric-grade')[0].innerText);
-            gpaData[cour_name] = cour_grade;
+            let gpa = calculateGPA(cour_name, Number.parseFloat(cours[i].getElementsByClassName('numeric-grade')[0].innerText));
+            totalGPA += gpa;
+            gradedClassCount++;
+            let span_gpa = document.createElement('span');
+            span_gpa.classList.add('numeric-grade');
+            span_gpa.textContent = ' GPA:' + gpa.toFixed(2);
+            cours[i].getElementsByClassName('links')[0].appendChild(span_gpa);
         }
         if (noti_cnt > 0) {
             updateCount += noti_cnt;
             updateClassCount++;
-            if (cours[i].getElementsByClassName('numeric-grade').length == 1) {
-                cours[i].getElementsByClassName('numeric-grade')[0].style += "color:red;";
+            if (cours[i].getElementsByClassName('numeric-grade').length == 2) {
+                let cour_grade = cours[i].getElementsByClassName('numeric-grade')[1].innerText;
+                if (!onlyNewUpdates)
+                    cours[i].getElementsByClassName('numeric-grade')[1].style.color = "red";
                 let id = btoa(cour_name);
                 cours[i].id = id;
                 let d = new Array(4);
@@ -367,7 +371,7 @@ background-color:#f5f5f5;
                 d[IND_ID] = id;
                 d[IND_GRADE] = cour_grade;
                 d[IND_COUNT] = noti_cnt;
-                currentData.push();
+                currentData.push(d);
                 notificationStr += cour_name + '(' + cour_grade + '): ' + (noti_cnt > 1 ? noti_cnt + ' updates' : '1 update') + '<br/>';
                 console.log(cour_name + ' has ' + (noti_cnt > 1 ? noti_cnt + ' updates' : '1 update'));
             }
@@ -426,8 +430,7 @@ background-color:#f5f5f5;
     var ul = document.createElement('ul');
     var li_notify = document.createElement('li');
     var span_notify = document.createElement('span');
-    span_notify.textContent = 'Current GPA: ' + calculateGPA(gpaData) + ', ';
-    span_notify.textContent += updateCount > 0 ? (updateClassCount + (updateClassCount > 1 ? ' classes have ' : ' class has ') + updateCount + (updateCount > 1 ? ' updates' : ' update')) : 'No update';
+    span_notify.textContent = 'Current GPA: ' + ((totalGPA / gradedClassCount).toFixed(2)) + ', ' + (updateCount > 0 ? (updateClassCount + (updateClassCount > 1 ? ' classes have ' : ' class has ') + updateCount + (updateCount > 1 ? ' updates' : ' update')) : 'No update');
     li_notify.appendChild(span_notify);
     ul.appendChild(li_notify);
     if (updateCount > 0) {
@@ -440,7 +443,7 @@ background-color:#f5f5f5;
         if (window.Notification.permission === 'default')
             window.Notification.requestPermission();
         var notification = new Notification('Veracross Student Extension', {
-            body: notificationStr
+            body: notificationStr.replace(new RegExp('<br/>', 'g'), '')
         });
         notification.onclick = function(event) {
             window.focus();

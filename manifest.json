@@ -17,7 +17,7 @@
 	[
 		{
 			"matches": ["https://portals.veracross.com/*/student", "https://portals.veracross.com/*/student?id=*"],
-			"js": ["/js/jquery-3.2.1.min.js", "/js/veracross-student-extensions.js"]
+			"js": ["/js/jquery-3.2.1.min.js", "/js/content-homepage.js"]
 		}
 	],
 	"web_accessible_resources": ["/js/*.js", "/img/*.png"]

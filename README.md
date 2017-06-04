@@ -12,5 +12,5 @@ I only test the extension on my account, so if you find any bugs, please contact
  - [X] Check and notify and grades automatically and periodically
  - [X] Calculate the GPA
  - [X] Setting panel
- - [ ] Grade charts in GradeDetail page
+ - [ ] Grade statistics in Grade Detail page
  - [ ] Themes / Skins

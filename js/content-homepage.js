@@ -1,82 +1,19 @@
 'use strict';
 
-var GetValue = chrome.storage.sync.get;
-var SetValue = chrome.storage.sync.set;
-
 function clearSettings() {
     SetValue({
+        'LastUpdateCount': 0,
+        'StoredData': [],
         'ReloadingInterval': 5 * 60 * 1000,
         'OnlyNewUpdates': true,
-        'ShowNotification': true
-    }, function() {});
-}
-
-function clearAllData() {
-    clearSettings();
-    SetValue({
-        'LastUpdateCount': 0,
-        'StoredData': []
-    }, function() {});
-    chrome.storage.onChanged.addListener(function(changes, namespace) {
-        for (let key in changes) {
-            var storageChange = changes[key];
-            console.log('Storage key "%s" in namespace "%s" changed. ' +
-                'Old value was "%s", new value is "%s".',
-                key,
-                namespace,
-                storageChange.oldValue,
-                storageChange.newValue);
-        }
+        'ShowNotification': true,
+        'ShowGPA': true
     });
 }
 
 //clearSettings(); // Only use this function when something is going wrong because of the settings
-//clearAllData();
-
-function debug() {
-    (function() {
-        GetValue(null, function(items) {
-            console.log(items);
-        });
-    })();
-    chrome.storage.onChanged.addListener(function(changes, namespace) {
-        for (key in changes) {
-            var storageChange = changes[key];
-            console.log('Storage key "%s" in namespace "%s" changed. ' +
-                'Old value was "%s", new value is "%s".',
-                key,
-                namespace,
-                storageChange.oldValue,
-                storageChange.newValue);
-        }
-    });
-}
-
-//debug(); // Only use this function when debugging
 
 var lastUpdateCount, storedData, onlyNewUpdates, showNotification, showGPA, reloadingInterval;
-
-GetValue(null,
-    function(items) {
-        if (chrome.runtime.lastError) {
-            lastUpdateCount = 0;
-            storedData = [];
-            onlyNewUpdates = true;
-            showNotification = true;
-			showGPA = true;
-            reloadingInterval = 5 * 60 * 1000;
-        } else {
-            lastUpdateCount = items['LastUpdateCount'];
-            storedData = items['StoredData'];
-            onlyNewUpdates = items['OnlyNewUpdates'];
-            showNotification = items['ShowNotification'];
-			showGPA = items['ShowGPA'];
-            reloadingInterval = items['ReloadingInterval'];
-            if (reloadingInterval === undefined || reloadingInterval === NaN)
-                reloadingInterval = 5 * 60 * 1000;
-        }
-        initExtension();
-    });
 
 function initExtension() {
     console.log('Loaded at ' + new Date().toLocaleTimeString('en-US', {
@@ -84,10 +21,10 @@ function initExtension() {
     }) + ' and will reload in ' + (reloadingInterval / 1000) + ' seconds');
     var cours = $('li[data-status=active]');
     var updateCount = 0,
-        updateClassCount = 0;
-    var currentData = [];
-    var notificationStr = '';
-    var totalGPA = 0,
+        updateClassCount = 0,
+        currentData = [],
+        notificationStr = '',
+        totalGPA = 0,
         gradedClassCount = 0;
     const IND_NAME = 0,
         IND_ID = 1,
@@ -115,7 +52,7 @@ function initExtension() {
         let li = document.createElement('li');
         li.title = 'Jump to the class ' + arr[IND_NAME];
         let id = arr[IND_ID];
-        li.onclick = function() {
+        li.onclick = function () {
             document.getElementById(id).scrollIntoView();
         };
         let s = document.createElement('span');
@@ -140,100 +77,27 @@ function initExtension() {
     }
 
     function createSettingDiv() {
+        addCss();
 
-        function addCss() {
-            var head = document.getElementsByTagName('head')[0];
-            var s = document.createElement('style');
-            s.type = 'text/css';
-            var cssText = `
-div.vsr {
-border-radius: 5px;
-padding: 20px;
-text-align: center;
-margin: auto;
-margin-bottom: 10px;
-}
+        let element = function (tag, id) {
+            let ret = document.createElement(tag);
+            ret.classList.add('vse');
+            if (id) ret.id = id;
+            return ret;
+        }
 
-input.vsr[type=text], input.vsr[type=number], select.vsr {
-width: 150px;
-padding: 4px 10px;
-margin: 4px 0;
-display: inline-flex;
-border: 1px solid #ccc;
-border-radius: 2px;
-box-sizing: border-box;
-}
+        let input = function (id, type) {
+            let ret = element('input', id);
+            ret.type = type;
+            return ret;
+        }
 
-input[type=checkbox].vsr-checkbox {
-position:absolute; z-index:-1000; left:-1000px; overflow: hidden; clip: rect(0 0 0 0); height:1px; width:1px; margin:-1px; padding:0; border:0;
-}
-
-input[type=checkbox].vsr-checkbox + label.vsr-label {
-padding-left:25px;
-height:20px;
-display:inline-block;
-line-height:20px;
-background-repeat:no-repeat;
-background-position: 0 0;
-font-size:20px;
-vertical-align:middle;
-cursor:pointer;
-
-}
-
-input[type=checkbox].vsr-checkbox:checked + label.vsr-label {
-background-position: 0 -20px;
-}
-label.vsr-label {
-background-image:url(chrome-extension://!!id!!/img/csscheckbox.png);
--webkit-touch-callout: none;
--webkit-user-select: none;
--khtml-user-select: none;
--moz-user-select: none;
--ms-user-select: none;
-user-select: none;
-}
-
-button.vsr {
-width: 100px;
-background-color: #3B5A91;
-color: white;
-padding: 4px 2px;
-margin: 2px 0;
-border-radius: 2px;
-cursor: pointer;
-font-weight: normal;
-background-image: none;
-}
-
-button.vsr:hover {
-font-style: italic;
-background-image: none;
-}
-
-table.vsr {
-border-collapse: collapse;
-width: 100%;
-}
-
-th.vsr {
-padding: 8px;
-text-align: right;
-}
-
-td.vsr {
-padding: 8px;
-text-align: left;
-}
-
-tr.vsr:hover {
-background-color:#f5f5f5;
-}`;
-            var id = chrome.runtime.id;
-            cssText = cssText.replace('!!id!!', id);
-            if (s.styleSheet) s.styleSheet.cssText = cssText;
-            else s.appendChild(document.createTextNode(cssText));
-            head.appendChild(s);
+        let button = function (text, onclick) {
+            let ret = element('button');
+            ret.type = 'button';
+            ret.textContent = text;
+            ret.onclick = onclick;
+            return ret;
         }
 
         function addSetting(container, label, editor, desc) {
@@ -250,7 +114,7 @@ background-color:#f5f5f5;
                 console.log('Unknown type of editor');
             let labelFor = element('label');
             labelFor.htmlFor = editorNode.children[0].id;
-            labelFor.classList.add('vsr-label');
+            labelFor.classList.add('vse-label');
             labelFor.textContent = ' ';
             editorNode.appendChild(labelFor);
             line.appendChild(editorNode);
@@ -263,91 +127,76 @@ background-color:#f5f5f5;
             container.appendChild(line);
         }
 
-        function element(tag, id) {
-            let ret = document.createElement(tag);
-            ret.classList.add('vsr');
-            if (id) ret.id = id;
-            return ret;
-        }
-
-        function input(id, type) {
-            let ret = element('input', id);
-            ret.type = type;
-            return ret;
-        }
-
-        function button(text, onclick) {
-            let ret = element('button');
-            ret.type = 'button';
-            ret.textContent = text;
-            ret.onclick = onclick;
-            return ret;
-        }
-
-        if ($('#veracross-score-reminder-settings').length === 0) {
-            addCss();
+        if ($('#vse-settings').length === 0) {
             let div_setting = element('div');
-            div_setting.id = 'veracross-score-reminder-settings';
+            div_setting.id = 'vse-settings';
             div_setting.className += ' content scrollable student-homepage';
             div_setting.style.display = 'none';
             div_setting.style.backgroundColor = 'rgba(255,255,255,100)';
             div_setting.style.margin = '0 auto';
             let header = element('div');
             header.style.width = '100%';
-            header.appendChild(button('Clear All Data', function() {
+            header.appendChild(button('Clear All Data', function () {
                 if (confirm('Are you sure to clear all the data including all the settings?')) {
                     clearAllData();
                     location.reload();
                     if (confirm('Require reloading the page to apply new settings. Reloading now?')) location.reload();
                 }
             }));
-            header.appendChild(button('Default', function() {
-                $('#vsr-reload-interval').prop('value', 5 * 60);
-                $('#vsr-only-new-updates').prop('checked', true);
-                $('#vsr-show-notification').prop('checked', true);
+            header.appendChild(button('Default', function () {
+                $('#vse-reload-interval').prop('value', 5 * 60);
+                $('#vse-only-new-updates').prop('checked', true);
+                $('#vse-show-notification').prop('checked', true);
             }));
-            header.appendChild(button('Save', function() {
-                onlyNewUpdates = $('#vsr-only-new-updates').is(':checked');
-                showNotification = $('#vsr-show-notification').is(':checked');
+            header.appendChild(button('Save', function () {
+                let newInterval = Math.floor(parseFloat(document.getElementById('vse-reload-interval').value) * 1000);
+                reloadingInterval = newInterval;
+                onlyNewUpdates = $('#vse-only-new-updates').is(':checked');
+                showNotification = $('#vse-show-notification').is(':checked');
+                showGPA = $('#vse-show-gpa').is(':checked');
                 SetValue({
-                    'ReloadingInterval': Math.floor(parseFloat(document.getElementById('vsr-reload-interval').value) * 1000),
+                    'ReloadingInterval': reloadingInterval,
                     'OnlyNewUpdates': onlyNewUpdates,
-                    'ShowNotification': showNotification
-                }, function() {});
+                    'ShowNotification': showNotification,
+                    'ShowGPA': showGPA
+                });
+                if (!showGPA) {
+                    $('.vse-gpa').hide();
+                }
                 if (confirm('Require reloading the page to apply new settings. Reloading now?')) location.reload();
             }));
-            header.appendChild(button('Close', function() {
-                $('#veracross-score-reminder-settings').hide();
+            header.appendChild(button('Close', function () {
+                $('#vse-settings').hide();
                 $('#portal-homepage').show();
             }));
             div_setting.appendChild(header);
             let settingTable = element('table');
             let settingForm = element('tbody');
             settingTable.appendChild(settingForm);
-            addSetting(settingForm, 'Reload Interval (seconds): ', (function() {
-                let ret = input('vsr-reload-interval', 'number');
+            addSetting(settingForm, 'Reload Interval (seconds): ', (function () {
+                let ret = input('vse-reload-interval', 'number');
                 ret.step = '1';
                 ret.value = (reloadingInterval / 1000);
                 return ret;
             })());
-            addSetting(settingForm, 'Only Show New Updates: ', (function() {
-                let ret = input('vsr-only-new-updates', 'checkbox');
-                ret.classList.add('vsr-checkbox');
+            addSetting(settingForm, 'Only Show New Updates: ', (function () {
+                let ret = input('vse-only-new-updates', 'checkbox');
+                ret.classList.add('vse-checkbox');
                 ret.checked = onlyNewUpdates;
                 return ret;
             })());
-            addSetting(settingForm, 'Show Notification: ', (function() {
-                let ret = input('vsr-show-notification', 'checkbox');
-                ret.classList.add('vsr-checkbox');
+            addSetting(settingForm, 'Show Notification: ', (function () {
+                let ret = input('vse-show-notification', 'checkbox');
+                ret.classList.add('vse-checkbox');
                 ret.checked = showNotification;
                 return ret;
             })());
-			addSetting(settingForm, 'Show GPAs: ', (function() {
-                let ret = input('vsr-show-gpa', 'checkbox');
-                ret.classList.add('vsr-checkbox');
+            addSetting(settingForm, 'Show GPAs: ', (function () {
+                let ret = input('vse-show-gpa', 'checkbox');
+                ret.classList.add('vse-checkbox');
                 ret.checked = showGPA;
                 return ret;
-			})());
+            })());
             div_setting.appendChild(settingTable);
             $('#portal-homepage').after(div_setting);
         }
@@ -356,13 +205,14 @@ background-color:#f5f5f5;
     for (let i = 0; i < cours.length; i++) {
         let noti_cnt = Number.parseInt(cours[i].getElementsByClassName('notifications-count')[0].innerText);
         let cour_name = cours[i].getElementsByClassName('class-name')[0].innerText;
-        if (cours[i].getElementsByClassName('numeric-grade').length == 1) {
+        if (showGPA && cours[i].getElementsByClassName('numeric-grade').length == 1) {
             let gpa = calculateGPA(cour_name, Number.parseFloat(cours[i].getElementsByClassName('numeric-grade')[0].innerText));
             totalGPA += gpa;
             gradedClassCount++;
             let span_gpa = document.createElement('span');
             span_gpa.classList.add('numeric-grade');
-            span_gpa.textContent = ' GPA:' + gpa.toFixed(2);
+            span_gpa.classList.add('vse-gpa');
+            span_gpa.textContent = ' GPA:' + gpa.toFixed(3);
             cours[i].getElementsByClassName('links')[0].appendChild(span_gpa);
         }
         if (noti_cnt > 0) {
@@ -380,7 +230,7 @@ background-color:#f5f5f5;
                 d[IND_GRADE] = cour_grade;
                 d[IND_COUNT] = noti_cnt;
                 currentData.push(d);
-                notificationStr += cour_name + '(' + cour_grade + '): ' + (noti_cnt > 1 ? noti_cnt + ' updates' : '1 update') + '<br/>';
+                notificationStr += cour_name + '(' + cour_grade + '): ' + (noti_cnt > 1 ? noti_cnt + ' updates' : '1 update') + '\n';
                 console.log(cour_name + ' has ' + (noti_cnt > 1 ? noti_cnt + ' updates' : '1 update'));
             }
         }
@@ -390,7 +240,7 @@ background-color:#f5f5f5;
     SetValue({
         'LastUpdateCount': updateCount,
         'StoredData': currentData
-    }, function() {});
+    });
 
     if (onlyNewUpdates) {
         for (let i = 0; i < storedData.length; i++) {
@@ -407,7 +257,7 @@ background-color:#f5f5f5;
     }
 
     var reminder = document.createElement('div');
-    reminder.id = 'veracross-score-reminder';
+    reminder.id = 'vse-details';
     reminder.classList.add('inbox');
     reminder.style.top = '10px';
     reminder.style.bottom = '40px';
@@ -423,10 +273,10 @@ background-color:#f5f5f5;
     title.textContent = 'VERACROSS SCORE REMINDER';
     var setting_href = document.createElement('a');
     setting_href.href = '#';
-    setting_href.onclick = function() {
+    setting_href.onclick = function () {
         createSettingDiv();
         $('#portal-homepage').hide();
-        $('#veracross-score-reminder-settings').show();
+        $('#vse-settings').show();
         return false;
     };
     setting_href.textContent = 'Settings';
@@ -438,7 +288,8 @@ background-color:#f5f5f5;
     var ul = document.createElement('ul');
     var li_notify = document.createElement('li');
     var span_notify = document.createElement('span');
-    span_notify.textContent = 'Current GPA: ' + ((totalGPA / gradedClassCount).toFixed(2)) + ', ' + (updateCount > 0 ? (updateClassCount + (updateClassCount > 1 ? ' classes have ' : ' class has ') + updateCount + (updateCount > 1 ? ' updates' : ' update')) : 'No update');
+    span_notify.textContent = showGPA ? ('Current GPA: ' + ((totalGPA / gradedClassCount).toFixed(3)) + ', ') : '';
+    span_notify.textContent += (updateCount > 0 ? (updateClassCount + (updateClassCount > 1 ? ' classes have ' : ' class has ') + updateCount + (updateCount > 1 ? ' updates' : ' update')) : 'No update');
     li_notify.appendChild(span_notify);
     ul.appendChild(li_notify);
     if (updateCount > 0) {
@@ -451,19 +302,49 @@ background-color:#f5f5f5;
         if (window.Notification.permission === 'default')
             window.Notification.requestPermission();
         var notification = new Notification('Veracross Student Extension', {
-            body: notificationStr.replace(new RegExp('<br/>', 'g'), '')
+            body: notificationStr
         });
-        notification.onclick = function(event) {
+        notification.onclick = function (event) {
             window.focus();
             reminder.focus();
+            reminder.scrollIntoView(false);
             notification.close();
         };
-        setTimeout(function() {
+        setTimeout(function () {
             notification.close();
             location.reload();
         }, reloadingInterval);
     } else
-        setTimeout(function() {
+        setTimeout(function () {
             location.reload();
         }, reloadingInterval);
 }
+
+GetValue(null, function (items) {
+    if (firstTimeInstall || chrome.runtime.lastError) {
+        lastUpdateCount = 0;
+        storedData = [];
+        onlyNewUpdates = true;
+        showNotification = true;
+        showGPA = true;
+        reloadingInterval = 5 * 60 * 1000;
+        if (firstTimeInstall) {
+            SetValue({
+                'ReloadingInterval': reloadingInterval,
+                'OnlyNewUpdates': onlyNewUpdates,
+                'ShowNotification': showNotification,
+                'ShowGPA': showGPA
+            });
+        }
+    } else {
+        lastUpdateCount = items['LastUpdateCount'];
+        storedData = items['StoredData'];
+        onlyNewUpdates = items['OnlyNewUpdates'];
+        showNotification = items['ShowNotification'];
+        showGPA = items['ShowGPA'];
+        reloadingInterval = items['ReloadingInterval'];
+        if (reloadingInterval === undefined || reloadingInterval === NaN)
+            reloadingInterval = 5 * 60 * 1000;
+    }
+    initExtension();
+});

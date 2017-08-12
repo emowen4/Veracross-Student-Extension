@@ -6,21 +6,25 @@
 	"version": "2.3.0",
 	"description": "The extension for Veracross student clients.",
 	"homepage_url": "https://github.com/emowen/Veracross-Student-Extension",
-	"icons": { "16": "img/icon16.png",
-			   "32": "img/icon32.png",
-			   "48": "img/icon48.png",
-			   "64": "img/icon64.png",
-			  "128": "img/icon128.png" },
-	"permissions": ["tabs", "storage", "https://portals.veracross.com/"],
-	"content_scripts":
-	[
-		{
-			"matches": ["https://portals.veracross.com/*/student", "https://portals.veracross.com/*/student?id=*"],
-			"js": ["/js/jquery-3.2.1.min.js", "/js/basic.js", "/js/css-settings.js", "/js/content-homepage.js"]
+	"icons": {
+		"16": "img/icon16.png",
+		"32": "img/icon32.png",
+		"48": "img/icon48.png",
+		"64": "img/icon64.png",
+		"128": "img/icon128.png"
+	},
+	"permissions": ["tabs", "storage", "https://portals.veracross.com/", "https://portals-app.veracross.com/"],
+	"content_scripts": [{
+			"matches": ["https://portals.veracross.com/*/student", "https://portals.veracross.com/*/student?id=*",
+                        "https://portals-app.veracross.com/*/student", "https://portals-app.veracross.com/*/student?id=*"],
+			"js": ["/js/jquery-3.2.1.min.js", "/js/echarts.min.js", "/js/basic.js", "/js/css-settings.js", "/js/content-homepage.js"]
 		},
 		{
-			"matches": ["https://portals.veracross.com/*/student/classes/*/grade_detail"],
-			"js": ["/js/jquery-3.2.1.min.js", "/js/basic.js", "/js/css-settings.js", "/js/content-class-grade.js"]
+			"matches": ["https://portals.veracross.com/*/student/classes/*/grade_detail",
+                        "https://portals.veracross.com/*/student/classes/*/grade_detail?vse-details",
+                        "https://portals-app.veracross.com/*/student/classes/*/grade_detail",
+                        "https://portals-app.veracross.com/*/student/classes/*/grade_detail?vse-details"],
+			"js": ["/js/jquery-3.2.1.min.js", "/js/echarts.min.js", "/js/basic.js", "/js/css-settings.js", "/js/content-class-grade.js"]
 		}
 	],
 	"web_accessible_resources": ["/js/*.js", "/img/*.png"]

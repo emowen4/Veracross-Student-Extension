@@ -1,7 +1,7 @@
 'use strict';
 
 function clearSettings() {
-    SetValue({
+    setValue({
         'LastUpdateCount': 0,
         'StoredData': [],
         'ReloadingInterval': 5 * 60 * 1000,
@@ -154,7 +154,7 @@ function initExtension() {
                 onlyNewUpdates = $('#vse-only-new-updates').is(':checked');
                 showNotification = $('#vse-show-notification').is(':checked');
                 showGPA = $('#vse-show-gpa').is(':checked');
-                SetValue({
+                setValue({
                     'ReloadingInterval': reloadingInterval,
                     'OnlyNewUpdates': onlyNewUpdates,
                     'ShowNotification': showNotification,
@@ -205,6 +205,7 @@ function initExtension() {
     for (let i = 0; i < cours.length; i++) {
         let noti_cnt = Number.parseInt(cours[i].getElementsByClassName('notifications-count')[0].innerText);
         let cour_name = cours[i].getElementsByClassName('class-name')[0].innerText;
+        let span_links = cours[i].getElementsByClassName('links')[0];
         if (showGPA && cours[i].getElementsByClassName('numeric-grade').length == 1) {
             let gpa = calculateGPA(cour_name, Number.parseFloat(cours[i].getElementsByClassName('numeric-grade')[0].innerText));
             totalGPA += gpa;
@@ -213,8 +214,13 @@ function initExtension() {
             span_gpa.classList.add('numeric-grade');
             span_gpa.classList.add('vse-gpa');
             span_gpa.textContent = ' GPA:' + gpa.toFixed(3);
-            cours[i].getElementsByClassName('links')[0].appendChild(span_gpa);
+            span_links.appendChild(span_gpa);
         }
+        let a_details = document.createElement('a');
+        a_details.classList.add('class-link');
+        a_details.href = document.getElementsByClassName('calculated-grade')[0].href + '?vse-details';
+        a_details.textContent = 'Detail Charts';
+        span_links.appendChild(a_details);
         if (noti_cnt > 0) {
             updateCount += noti_cnt;
             updateClassCount++;
@@ -237,7 +243,7 @@ function initExtension() {
     }
 
     // Save Data
-    SetValue({
+    setValue({
         'LastUpdateCount': updateCount,
         'StoredData': currentData
     });
@@ -320,7 +326,7 @@ function initExtension() {
         }, reloadingInterval);
 }
 
-GetValue(null, function (items) {
+getValue(null, function (items) {
     if (firstTimeInstall || chrome.runtime.lastError) {
         lastUpdateCount = 0;
         storedData = [];
@@ -329,7 +335,7 @@ GetValue(null, function (items) {
         showGPA = true;
         reloadingInterval = 5 * 60 * 1000;
         if (firstTimeInstall) {
-            SetValue({
+            setValue({
                 'ReloadingInterval': reloadingInterval,
                 'OnlyNewUpdates': onlyNewUpdates,
                 'ShowNotification': showNotification,

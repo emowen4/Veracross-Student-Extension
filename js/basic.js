@@ -1,12 +1,12 @@
 'use strict';
 
-var GetValue = function (val, func) {
+var getValue = function (val, func) {
     if (func === undefined || func === null || typeof (func) !== 'function')
         chrome.storage.sync.get(val, function () {});
     else
         chrome.storage.sync.get(val, func);
 }
-var SetValue = function (val, func) {
+var setValue = function (val, func) {
     if (func === undefined || func === null || typeof (func) !== 'function')
         chrome.storage.sync.set(val, function () {
             if (chrome.runtime.lastError) console.log(chrome.runtime.lastError.message);
@@ -17,7 +17,7 @@ var SetValue = function (val, func) {
 
 function debug() {
     (function () {
-        GetValue(null, function (items) {
+        getValue(null, function (items) {
             console.log(items);
         });
     })();
@@ -38,7 +38,7 @@ function debug() {
 
 var firstTimeInstall;
 
-GetValue('firstTimeInstall', function (items) {
+getValue('firstTimeInstall', function (items) {
     if (chrome.runtime.lastError)
         console.log(chrome.runtime.lastError.message);
     else
@@ -47,5 +47,5 @@ GetValue('firstTimeInstall', function (items) {
         firstTimeInstall = true;
     if (firstTimeInstall)
         console.log('First time install. Initing the extension settings.');
-        SetValue({'firstTimeInstall': false});
+        setValue({'firstTimeInstall': false});
 });

@@ -1,12 +1,12 @@
 'use strict';
 
-var getValue = function (val, func) {
+const getValue = function (val, func) {
     if (func === undefined || func === null || typeof (func) !== 'function')
         chrome.storage.sync.get(val, function () {});
     else
         chrome.storage.sync.get(val, func);
 }
-var setValue = function (val, func) {
+const setValue = function (val, func) {
     if (func === undefined || func === null || typeof (func) !== 'function')
         chrome.storage.sync.set(val, function () {
             if (chrome.runtime.lastError) console.log(chrome.runtime.lastError.message);
@@ -22,7 +22,7 @@ function debug() {
         });
     })();
     chrome.storage.onChanged.addListener(function (changes, namespace) {
-        for (key in changes) {
+        for (var key in changes) {
             var storageChange = changes[key];
             console.log('Storage key "%s" in namespace "%s" changed. ' +
                 'Old value was "%s", new value is "%s".',

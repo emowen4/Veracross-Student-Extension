@@ -1,15 +1,20 @@
 function addCss() {
-    var head = document.getElementsByTagName('head')[0];
-    var s = document.createElement('style');
+    let s = document.createElement('style');
     s.type = 'text/css';
-    var id = chrome.runtime.id;
-    cssText = cssText.replace('!!id!!', id);
     if (s.styleSheet) s.styleSheet.cssText = cssText;
     else s.appendChild(document.createTextNode(cssText));
-    head.appendChild(s);
+    document.getElementsByTagName('head')[0].appendChild(s);
 }
 
-var cssText = `
+const cssText = `
+.component-class-list-student .notifications-link.highlight .notification-badge {
+    background: #AAA;
+}
+.notification-label {
+    color: #AAA;
+}`.replace('!!id!!', chrome.runtime.id);
+
+const dep = `
 div.vsr {
 border-radius: 5px;
 padding: 20px;
@@ -92,4 +97,4 @@ text-align: left;
 
 tr.vsr:hover {
 background-color:#f5f5f5;
-}`;
+}`.replace('!!id!!', chrome.runtime.id);

@@ -52,7 +52,7 @@ const SchoolList = {
         new Array(70).fill(0).concat([1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.0, 4.1, 4.1, 4.2, 4.2, 4.3, 4.3, 4.4, 4.4, 4.4]),
         // Regular 3
         new Array(70).fill(0).concat([1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.0, 4.1, 4.1, 4.2, 4.2, 4.3, 4.3, 4.4, 4.4, 4.4])
-    ], ['senior project'])
+    ], ['senior project', 'lunch', 'advisory', 'college planning', 'unscheduled'])
 };
 
 const VSE = new function () {
@@ -77,7 +77,7 @@ const VSE = new function () {
         if (clz.startsWith('AP')) ind = 0;
         else if (clz.startsWith('Honors')) ind = 1;
         else if (clz.startsWith('Advance')) ind = 2;
-        return grade >= 0 ? SchoolList[school_code].gpa[ind][grade] : 0;
+        return grade >= 0 ? SchoolList[school_code].gpa[ind][Math.round(grade)] : 0;
     };
     this.showDetails = window.location.href.endsWith('vse-details');
     this.init = function() {
@@ -129,10 +129,10 @@ function School(name, code, gpa, exceptedClass = []) {
     this.code = code;
     this.gpa = gpa;
     this.exceptedClass = exceptedClass; // Except if the class names contain the keywords
-    this.except = function(clz) {
+    this.exceptFor = function(clz) {
         let name = clz.toLowerCase();
-        for (let c in this.exceptedClass)
-            if (name.contains(c)) return true;
+        for (let i = 0; i < this.exceptedClass.length; i++)
+            if (name.includes(this.exceptedClass[i])) return true;
         return false;
     }
 }

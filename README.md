@@ -10,7 +10,11 @@ I only test the extension on my account, so if you find any bugs, please contact
 
 ### TODO
  - [X] Check and notify and grades automatically and periodically
- - [X] Calculate the GPA
- - [X] Setting panel
+ - [X] Calculate GPAs
+ - [ ] Setting panel
  - [ ] Grade statistics in Grade Detail page
- - [ ] Themes / Skins
+
+### Lib Used
+ - [JQuery](https://jquery.com/)
+ - [JQuery UI](https://jqueryui.com/)
+ - [ECharts](https://github.com/ecomfe/echarts)

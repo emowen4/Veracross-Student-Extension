@@ -19,7 +19,7 @@ function initExtension() {
     console.log('Loaded at ' + new Date().toLocaleTimeString('en-US', {
         hour12: false
     }) + ' and will reload in ' + (reloadingInterval / 1000) + ' seconds');
-    var cours = $('li[data-status=active]');
+    var cours = $('ul.course-list.active li.course-list-item');
     var updateCount = 0,
         updateClassCount = 0,
         currentData = [],
@@ -203,11 +203,12 @@ function initExtension() {
     }
 
     for (let i = 0; i < cours.length; i++) {
-        let noti_cnt = Number.parseInt(cours[i].getElementsByClassName('notifications-count')[0].innerText);
-        let cour_name = cours[i].getElementsByClassName('class-name')[0].innerText;
-        let span_links = cours[i].getElementsByClassName('links')[0];
-        if (showGPA && cours[i].getElementsByClassName('numeric-grade').length == 1) {
-            let gpa = calculateGPA(cour_name, Number.parseFloat(cours[i].getElementsByClassName('numeric-grade')[0].innerText));
+        let noti_cnt = Number.parseInt(cours[i].getElementsByClassName('notifications-badge')[0].innerText.trim());
+        let cour_name = cours[i].getElementsByClassName('course-description')[0].innerText.trim();
+        let span_links = cours[i].getElementsByClassName('website-links')[0];
+        if (showGPA && cours[i].getElementsByClassName('course-numeric-grade').length == 1) {
+            let gpa = calculateGPA(cour_name,
+                Number.parseFloat(cours[i].getElementsByClassName('course-numeric-grade')[0].innerText));
             totalGPA += gpa;
             gradedClassCount++;
             let span_gpa = document.createElement('span');
@@ -218,7 +219,7 @@ function initExtension() {
         }
         let a_details = document.createElement('a');
         a_details.classList.add('class-link');
-        a_details.href = document.getElementsByClassName('calculated-grade')[0].href + '?vse-details';
+        a_details.href = document.getElementsByClassName('calculated-grade')[0].href + '?vse-details=1';
         a_details.textContent = 'Detail Charts';
         span_links.appendChild(a_details);
         if (noti_cnt > 0) {
@@ -302,7 +303,8 @@ function initExtension() {
         currentData.map(createList);
     }
     contents.appendChild(ul);
-    $('div.news.clear')[0].before(reminder);
+    // $('div.news.clear')[0].before(reminder);
+    $('div.app-container div.ae-grid div.ae-grid__item div.ae-grid div.ae-grid__item')[2].before(reminder);
 
     if (showNotification && updateCount > 0) {
         if (window.Notification.permission === 'default')
@@ -311,6 +313,7 @@ function initExtension() {
             body: notificationStr
         });
         notification.onclick = function (event) {
+            event.preventDefault();
             window.focus();
             reminder.focus();
             reminder.scrollIntoView(false);

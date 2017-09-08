@@ -6,13 +6,7 @@ function addCss() {
     document.getElementsByTagName('head')[0].appendChild(s);
 }
 
-const cssText = `
-.component-class-list-student .notifications-link.highlight .notification-badge {
-    background: #AAA;
-}
-.notification-label {
-    color: #AAA;
-}`.replace('!!id!!', chrome.runtime.id);
+const cssText = '';
 
 const dep = `
 div.vsr {

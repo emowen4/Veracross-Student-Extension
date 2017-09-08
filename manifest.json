@@ -3,7 +3,7 @@
   "name": "Veracross Student Extension",
   "short_name": "VSE",
   "author": "EmOwen4",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "The extension for Veracross student clients.",
   "homepage_url": "https://github.com/emowen/Veracross-Student-Extension",
   "icons": {
@@ -27,7 +27,8 @@
       "css": [
         "/css/jquery-ui.min.css",
         "/css/jquery-ui.structure.min.css",
-        "/css/jquery-ui.theme.min.css"
+        "/css/jquery-ui.theme.min.css",
+        "/css/vse.css"
       ],
       "js": [
         "/js/jquery-3.2.1.min.js",
@@ -47,7 +48,8 @@
       "css": [
         "/css/jquery-ui.min.css",
         "/css/jquery-ui.structure.min.css",
-        "/css/jquery-ui.theme.min.css"
+        "/css/jquery-ui.theme.min.css",
+        "/css/vse.css"
       ],
       "js": [
         "/js/jquery-3.2.1.min.js",

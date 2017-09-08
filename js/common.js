@@ -136,3 +136,7 @@ function School(name, code, gpa, exceptedClass = []) {
         return false;
     }
 }
+
+function SettingDiv() {
+
+}

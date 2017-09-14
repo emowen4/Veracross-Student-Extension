@@ -1,14 +1,14 @@
 'use strict';
 
-function Course(name, id, grade, letterGrade, update_count, ele_cour) {
+function Course(name, id, grade, letterGrade, update_count, ele_cour = null) {
     this.name = name;
     this.id = id;
     this.grade = grade < 0 ? 0 : (grade > 100 ? 100 : grade);
-    this.letterGrade = letterGrade || '';
+    this.letterGrade = letterGrade || ''; // not used yet
     this.updateCount = update_count < 0 ? 0 : update_count;
+    this.newUpdateCount = this.updateCount;
     this.domElement = ele_cour;
 }
-
 
 function __init_Homepage() {
     let cours = $('div.component-class-list-student div.course');
@@ -17,10 +17,8 @@ function __init_Homepage() {
         return;
     }
 
-    let tempData = [];
-    let notificationStr = '';
-
     // Pre-process class data, remove all the classes that not count or has no grades
+    let tempData = [];
     for (let i = 0; i < cours.length; i++) {
         let cour_name = cours[i].getElementsByClassName('course-name')[0].innerText.trim();
         if (VSE.School.exceptFor(cour_name)) continue;
@@ -33,45 +31,18 @@ function __init_Homepage() {
                 let id = btoa(cour_name);
                 cours[i].id = id;
                 tempData.push(new Course(cour_name, id, cour_grade, letter_grade, noti_cnt, cours[i]));
-                notificationStr += cour_name + '(' + cour_grade + '):' + (noti_cnt > 1 ? noti_cnt + ' updates' : '1 update') + '\n';
             }
         }
     }
-
-    let currentData;
-    let updateCount = 0, updateClassCount = 0;
-
-    // Process the data, remove duplicated classes, calculate update count
-    VSE.Settings.onlyNewUpdates = false;
-    if (VSE.Settings.onlyNewUpdates) {
-        currentData = [];
-        out: for (let j = 0; j < tempData.length; j++) {
-            for (let i = 0; i < VSE.Settings.storedData.length; i++) {
-                if (tempData[j].name === VSE.Settings.storedData[i].name && tempData[j].grade === VSE.Settings.storedData[i].grade) {
-                    tempData[j].updateCount -= VSE.Settings.storedData[i].updateCount;
-                    if (tempData[j].updateCount <= 0) continue out;
-                    else break;
-                }
-            }
-            updateCount += tempData[j].updateCount;
-            updateClassCount++;
-            currentData.push(tempData[j]);
-        }
-    } else {
-        currentData = tempData;
-        updateClassCount = currentData.length;
-        for (let i = 0; i < updateClassCount; i++)
-            updateCount += currentData[i].updateCount;
-    }
-
-    let totalGPA = 0;
+    let processedData = processClassData(tempData);
 
     // Add GPA span and Analyze link for each class which has a score
     if (VSE.Settings.showGPA) {
-        for (let i = 0; i < updateClassCount; i++) {
-            let sel_num_grade = currentData[i].domElement.getElementsByClassName('numeric-grade');
+        let totalGPA = 0;
+        for (let i = 0; i < processedData.storedData.length; i++) {
+            let sel_num_grade = processedData.storedData[i].domElement.getElementsByClassName('numeric-grade');
             if (sel_num_grade.length === 1) {
-                let gpa = VSE.calcGPA(currentData[i].name, Number.parseFloat(sel_num_grade[0].innerText));
+                let gpa = VSE.calcGPA(processedData.storedData[i].name, Number.parseFloat(sel_num_grade[0].innerText));
                 totalGPA += gpa;
                 let span_gpa = document.createElement('span');
                 span_gpa.classList.add('vse-gpa');
@@ -89,36 +60,7 @@ function __init_Homepage() {
             .textContent += VSE.Settings.showGPA ? (' (Current GPA: ' + ((totalGPA / tempData.length).toFixed(3)) + ')') : '';
     }
 
-    // Add color to the classes that have updates
-    $('a.notifications-link.highlight').removeClass('highlight');
-    for (let i = 0; i < currentData.length; i++) {
-        console.log(currentData[i].name + ' has ' + (currentData[i].updateCount > 1 ? currentData[i].updateCount + ' updates' : '1 update'));
-        $(currentData[i].domElement).find('.notification-badge').css('background', '#FF9933');
-        $(currentData[i].domElement).find('.notification-label').css('color', '#FF9933');
-    }
-
-    if (VSE.Settings.showNotification && updateCount > 0) {
-        if (window.Notification.permission === 'default')
-            window.Notification.requestPermission();
-        let notification = new Notification('Veracross Student Extension', {
-            body: (updateCount === 1 ? '1 update' : updateCount + ' updates') + ' in ' + (updateClassCount === 1 ? '1 course' : updateClassCount + ' courses')
-                    + '.\n' + notificationStr,
-            requireInteraction: VSE.Settings.onlyNewUpdates // If only show new updates, require to click on the notification to store the data
-        });
-        notification.onclick = function (event) {
-            event.preventDefault();
-            VSE.Settings.store(updateCount, currentData);
-            window.focus();
-            notification.close();
-        };
-        setTimeout(function () {
-            notification.close();
-            location.reload();
-        }, VSE.Settings.reloadingInterval);
-    } else
-        setTimeout(function () {
-            location.reload();
-        }, VSE.Settings.reloadingInterval);
+    postInit(processedData);
 }
 
 function __init_Class() {
@@ -128,10 +70,8 @@ function __init_Class() {
         return;
     }
 
-    let tempData = [];
-    let notificationStr = '';
-
     // Pre-process class data, remove all the classes that not count or has no grades
+    let tempData = [];
     for (let i = 0; i < cours.length; i++) {
         let cour_name = cours[i].getElementsByClassName('course-description')[0].innerText.trim();
         if (VSE.School.exceptFor(cour_name)) continue;
@@ -144,46 +84,18 @@ function __init_Class() {
                 let id = btoa(cour_name);
                 cours[i].id = id;
                 tempData.push(new Course(cour_name, id, cour_grade, letter_grade, noti_cnt, cours[i]));
-                notificationStr += cour_name + '(' + cour_grade + '):' + (noti_cnt > 1 ? noti_cnt + ' updates' : '1 update') + '\n';
             }
         }
     }
-
-    let currentData;
-    let updateCount = 0, updateClassCount = 0;
-
-    // Process the data, remove duplicated classes, calculate update count
-    VSE.Settings.onlyNewUpdates = false;
-    if (VSE.Settings.onlyNewUpdates) {
-        currentData = [];
-        out: for (let j = 0; j < tempData.length; j++) {
-            for (let i = 0; i < VSE.Settings.storedData.length; i++) {
-                if (tempData[j].name === VSE.Settings.storedData[i].name && tempData[j].grade === VSE.Settings.storedData[i].grade) {
-                    tempData[j].updateCount -= VSE.Settings.storedData[i].updateCount;
-                    if (tempData[j].updateCount <= 0) continue out;
-                    else break;
-                }
-            }
-            updateCount += tempData[j].updateCount;
-            updateClassCount++;
-            currentData.push(tempData[j]);
-        }
-    } else {
-        currentData = tempData;
-        updateClassCount = currentData.length;
-        for (let i = 0; i < updateClassCount; i++)
-            updateCount += currentData[i].updateCount;
-    }
-
-    let totalGPA = 0;
+    let processedData = processClassData(tempData);
 
     // Add GPA span and Analyze link for each class which has a score
-    $('a.highlight').removeClass('highlight');
     if (VSE.Settings.showGPA) {
-        for (let i = 0; i < updateClassCount; i++) {
-            let sel_num_grade = currentData[i].domElement.getElementsByClassName('course-numeric-grade');
+        let totalGPA = 0;
+        for (let i = 0; i < processedData.storedData.length; i++) {
+            let sel_num_grade = processedData.storedData[i].domElement.getElementsByClassName('course-numeric-grade');
             if (sel_num_grade.length === 1) {
-                let gpa = VSE.calcGPA(currentData[i].name, Number.parseFloat(sel_num_grade[0].innerText));
+                let gpa = VSE.calcGPA(processedData.storedData[i].name, Number.parseFloat(sel_num_grade[0].innerText));
                 totalGPA += gpa;
                 let span_gpa = document.createElement('span');
                 span_gpa.classList.add('vse-gpa');
@@ -200,45 +112,103 @@ function __init_Class() {
         $('div.student-overview > h3.student-overview-heading')[0]
             .textContent += VSE.Settings.showGPA ? (' (Current GPA: ' + ((totalGPA / tempData.length).toFixed(3)) + ')') : '';
     }
-
-    // Add color to the classes that have updates
-    addCss();
-    for (let i = 0; i < currentData.length; i++) {
-        console.log(currentData[i].name + ' has ' + (currentData[i].updateCount > 1 ? currentData[i].updateCount + ' updates' : '1 update'));
-        $(currentData[i].domElement).find('.notification-badge').css('background', '#FF9933');
-        $(currentData[i].domElement).find('.notification-label').css('color', '#FF9933');
-    }
-
-    if (VSE.Settings.showNotification && updateCount > 0) {
-        if (window.Notification.permission === 'default')
-            window.Notification.requestPermission();
-        let notification = new Notification('Veracross Student Extension', {
-            body: (updateCount === 1 ? '1 update' : updateCount + ' updates') + ' in ' + (updateClassCount === 1 ? '1 course' : updateClassCount + ' courses')
-            + '.\n' + notificationStr,
-            requireInteraction: VSE.Settings.onlyNewUpdates // If only show new updates, require to click on the notification to store the data
-        });
-        notification.onclick = function (event) {
-            event.preventDefault();
-            VSE.Settings.store(updateCount, currentData);
-            window.focus();
-            notification.close();
-        };
-        setTimeout(function () {
-            notification.close();
-            location.reload();
-        }, VSE.Settings.reloadingInterval);
-    } else
-        setTimeout(function () {
-            location.reload();
-        }, VSE.Settings.reloadingInterval);
+    postInit(processedData);
 }
 
-function loadInitialFunction() {
+function processClassData(tempData) {
+    let currentData;
+    let updateCount = 0, updateClassCount = 0;
+    // Process the data, remove duplicated classes, calculate update count
+    if (VSE.Settings.onlyNewUpdates) {
+        currentData = [];
+        for (let i = 0; i < tempData.length; i++) {
+            let match = false, notFound = true;
+            for (let j = 0; notFound && j < VSE.Settings.storedData.length; j++) {
+                if (tempData[i].name === VSE.Settings.storedData[j].name && tempData[i].grade === VSE.Settings.storedData[j].grade) {
+                    tempData[i].newUpdateCount -= VSE.Settings.storedData[j].updateCount;
+                    if (tempData[i].newUpdateCount > 0) match = true; // has new updates
+                    notFound = false;
+                }
+            }
+            if (notFound || match) {
+                updateCount += tempData[i].newUpdateCount;
+                updateClassCount++;
+                currentData.push(tempData[i]);
+            }
+        }
+    } else {
+        currentData = tempData;
+        updateClassCount = currentData.length;
+        for (let i = 0; i < updateClassCount; i++)
+            updateCount += currentData[i].updateCount;
+    }
+    // construct notification body text
+    let notificationStr = '';
+    for (let i = 0; i < updateClassCount; i++) {
+        notificationStr += currentData[i].name + '(' + currentData[i].grade + '):'
+            + (currentData.newUpdateCount > 1 ? currentData.newUpdateCount + ' updates' : '1 update') + '\n';
+    }
+    return {'storedData': tempData, 'data': currentData, 'updateCount': updateCount, 'updateClassCount': updateClassCount, 'notificationBody': notificationStr};
+}
+
+function postInit(processedData) {
+    // Add color to the classes that have updates
+    $('a.notifications-link.highlight').removeClass('highlight');
+    for (let i = 0; i < processedData.data.length; i++) {
+        console.log(processedData.data[i].name + ' has ' + (processedData.data[i].updateCount > 1 ? processedData.data[i].updateCount + ' updates' : '1 update'));
+        $(processedData.data[i].domElement).find('.notification-badge').css('background', '#FF9933');
+        $(processedData.data[i].domElement).find('.notification-label').css('color', '#FF9933');
+    }
+
+    // Show notification
+    if (VSE.Settings.showNotification && processedData.updateCount > 0) {
+        window.Notification.requestPermission().then(p => {
+            if (p === 'granted') {
+                let notification = new window.Notification('Veracross Student Extension', {
+                    body: (processedData.updateCount >= 5 ? processedData.updateCount + ' updates'
+                        + ' in ' + (processedData.updateClassCount === 1 ? '1 course' : processedData.updateClassCount + ' courses') : '')
+                    + '.\n' + processedData.notificationBody,
+                    requireInteraction: VSE.Settings.onlyNewUpdates // If only show new updates, require to click on the notification to store the data
+                });
+                notification.onclick = event => {
+                    event.preventDefault();
+                    for (let i = 0; i < processedData.data.length; i++)
+                        processedData.storedData[i].domElement = {};
+                    VSE.Settings.store(processedData);
+                    window.focus();
+                    notification.close();
+                };
+                setTimeout(() => {
+                    notification.close();
+                    location.reload(true);
+                }, VSE.Settings.reloadingInterval);
+            }
+        });
+    }
+    else
+        setTimeout(() => { location.reload(true); }, VSE.Settings.reloadingInterval);
+}
+
+function getInitialFunction() {
     let url = window.location.pathname;
     if (url.endsWith('/student/student/overview')) return __init_Class;
     else if (url.endsWith('/student')) return __init_Homepage;
     return ()=>{ console.error('Page not support'); };
 }
+
+VSE.initExtension = function() {
+    console.log('Loaded at ' + new Date().toLocaleTimeString('en-US', {
+        hour12: false
+    }) + ' and will reload in ' + (VSE.Settings.reloadingInterval / 1000) + ' seconds');
+    getInitialFunction()();
+};
+
+VSE.Settings.store = function (processedData) {
+    setValue({
+        'LastUpdateCount': processedData.updateCount,
+        'StoredData': processedData.storedData
+    });
+};
 
 _clearSettings = () => {
     setValue({
@@ -252,22 +222,7 @@ _clearSettings = () => {
     });
 };
 
-VSE.initExtension = function() {
-    console.log('Loaded at ' + new Date().toLocaleTimeString('en-US', {
-        hour12: false
-    }) + ' and will reload in ' + (VSE.Settings.reloadingInterval / 1000) + ' seconds');
-    loadInitialFunction()();
-};
-
-VSE.Settings.store = function (updateCount, currentData) {
-    setValue({
-        'LastUpdateCount': updateCount,
-        'StoredData': currentData
-    });
-};
-
 // clearSettings();
-
 // debugOn();
 // debugStoredValues();
 

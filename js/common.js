@@ -103,7 +103,7 @@ const VSE = new function () {
                         setValue({
                             'ReloadingInterval': reloadingInterval,
                             'OnlyNewUpdates': onlyNewUpdates,
-                            'ShowNotification': showNotification,
+                            'ShowNotification': postInit,
                             'ShowGPA': showGPA
                         });
                     }
@@ -117,8 +117,11 @@ const VSE = new function () {
                     if (VSE.Settings.reloadingInterval === undefined || isNaN(VSE.Settings.reloadingInterval))
                         VSE.Settings.reloadingInterval = 5 * 60 * 1000;
                 }
-                if (VSE.initExtension)
-                    VSE.initExtension();
+                $(document).ready(() => {
+                    createSettingDiv();
+                    if (VSE.initExtension)
+                        VSE.initExtension();
+                });
             });
         });
     };
@@ -137,6 +140,23 @@ function School(name, code, gpa, exceptedClass = []) {
     }
 }
 
-function SettingDiv() {
-
+function createSettingDiv() {
+    // Add an icon and a button of the setting panel to the top navigation bar
+    let li_setting = document.createElement('li');
+    li_setting.classList.add('vx-PortalNav_Item');
+    let a_setting = document.createElement('a');
+    a_setting.href = 'javascript:void(0);';
+    a_setting.classList.add('vx-PortalNav_ItemLink');
+    let i_setting = document.createElement('img');
+    i_setting.src = chrome.runtime.getURL('/images/icon-settings.png');
+    i_setting.width = '22';
+    i_setting.height = '22';
+    i_setting.style.marginRight = '5px';
+    i_setting.style.marginBottom = '2px';
+    i_setting.style.verticalAlign = 'middle';
+    a_setting.appendChild(i_setting);
+    a_setting.innerHTML += '\n          Extension Settings';
+    li_setting.appendChild(a_setting);
+    document.getElementsByClassName('vx-PortalNav')[0].appendChild(li_setting);
+    // Create the setting div
 }

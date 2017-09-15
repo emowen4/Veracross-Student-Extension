@@ -166,8 +166,8 @@ function postInit(processedData) {
             if (p === 'granted') {
                 let notification = new window.Notification('Veracross Student Extension', {
                     body: (processedData.updateCount >= 5 ? processedData.updateCount + ' updates'
-                        + ' in ' + (processedData.updateClassCount === 1 ? '1 course' : processedData.updateClassCount + ' courses') : '')
-                    + '.\n' + processedData.notificationBody,
+                        + ' in ' + (processedData.updateClassCount === 1 ? '1 course' : processedData.updateClassCount + ' courses') + '.\n' : '')
+                    + processedData.notificationBody,
                     requireInteraction: VSE.Settings.onlyNewUpdates // If only show new updates, require to click on the notification to store the data
                 });
                 notification.onclick = event => {
@@ -196,7 +196,7 @@ function getInitialFunction() {
     return ()=>{ console.error('Page not support'); };
 }
 
-VSE.initExtension = function() {
+VSE.initExtension = function () {
     console.log('Loaded at ' + new Date().toLocaleTimeString('en-US', {
         hour12: false
     }) + ' and will reload in ' + (VSE.Settings.reloadingInterval / 1000) + ' seconds');
@@ -209,21 +209,3 @@ VSE.Settings.store = function (processedData) {
         'StoredData': processedData.storedData
     });
 };
-
-_clearSettings = () => {
-    setValue({
-        'FirstTimeInstall': true,
-        'LastUpdateCount': 0,
-        'StoredData': [],
-        'ReloadingInterval': 5 * 60 * 1000,
-        'OnlyNewUpdates': true,
-        'ShowNotification': true,
-        'ShowGPA': true
-    });
-};
-
-// clearSettings();
-// debugOn();
-// debugStoredValues();
-
-VSE.init();

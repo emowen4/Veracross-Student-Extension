@@ -64,6 +64,12 @@
       "matches": [
         "https://portals.veracross.com/*/student/*"
       ],
+      "exclude_matches": [
+        "https://portals.veracross.com/*/student",
+        "https://portals.veracross.com/*/student/student/overview",
+        "https://portals.veracross.com/*/student/student/*/classes/*/grade_detail",
+        "https://portals.veracross.com/*/student/student/*/classes/*/grade_detail?vse-details"
+      ],
       "css": [
         "/css/jquery-ui.min.css",
         "/css/jquery-ui.structure.min.css",

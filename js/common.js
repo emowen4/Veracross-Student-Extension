@@ -154,23 +154,20 @@ function createSettingDiv() {
     let a_setting = document.createElement('a');
     a_setting.href = '#';
     a_setting.classList.add('vx-PortalNav_ItemLink');
-    $(a_setting).hover(() => {
-        a_setting.children[0].src = chrome.runtime.getURL('/images/icon-settings-hover.png');
-        $(a_setting).css('color', '#005FB1');
-        $(a_setting).css('background-color', '#FFF');
-    }, () => {
-        a_setting.children[0].src = chrome.runtime.getURL('/images/icon-settings.png');
-        $(a_setting).css('color', '#FFF');
-        $(a_setting).css('background-color', '#005FB1');
-    });
-    $('div.app-container').prop('id', 'veracross-app-container');
-    $(a_setting).click(() => {
-        a_setting.children[0].src = chrome.runtime.getURL('/images/icon-settings.png');
-        $('div#vse-settings').toggle('fade', {}, 400);
-        $('div#veracross-app-container').toggle('fade', {}, 400);
-        $(a_setting).css('color', '#FFF');
-        $(a_setting).css('background-color', '#005FB1');
-    });
+    $(a_setting)
+        .hover(() => { // when hover
+            a_setting.children[0].src = chrome.runtime.getURL('/images/icon-settings-hover.png');
+            $(a_setting).css('color', '#005FB1').css('background-color', '#FFF');
+        }, () => { // when unhover
+            a_setting.children[0].src = chrome.runtime.getURL('/images/icon-settings.png');
+            $(a_setting).css('color', '#FFF').css('background-color', '#005FB1');
+        })
+        .click(() => {
+            a_setting.children[0].src = chrome.runtime.getURL('/images/icon-settings.png');
+            $('div#vse-settings').toggle('fade', {}, 400);
+            $('div#veracross-app-container').toggle('fade', {}, 400);
+            $(a_setting).css('color', '#FFF').css('background-color', '#005FB1');
+        });
     let i_setting = document.createElement('img');
     i_setting.src = chrome.runtime.getURL('/images/icon-settings.png');
     i_setting.width = '22';
@@ -187,30 +184,31 @@ function createSettingDiv() {
     div_setting.className = 'vse app-container -width';
     div_setting.id = 'vse-settings';
     $(div_setting).hide();
-    $('div.app-container').after(div_setting);
+    $('div.app-container').prop('id', 'veracross-app-container').after(div_setting);
     // create content div
     let div_tooltip = document.createElement('div');
     div_tooltip.className = 'screen-toolbar';
-    div_tooltip.innerHTML = '<span class="screen-title">\n    Extension Settings\n  </span>';
+    div_tooltip.innerHTML = '<span class="screen-title" style="text-align:left;font-size:1.15rem;display:block;color:#333333">\n    Extension Settings\n  </span>';
     div_setting.appendChild(div_tooltip);
     // create top buttons
     let div_buttons = document.createElement('div');
     div_buttons.style.width = '100%';
     div_buttons.style.height = '60px';
     function button(text, onclick) { return $('<button/>').text(text).click(onclick).addClass('vse-setting-button'); }
+    function divider() { return $('<div style="width:6px;height:auto;display:inline-block;"/>'); }
     $(div_buttons)
         .append(button('Clear All Data', () => {
             if (confirm('Are you sure to clear all the data including all the settings?')) {
                 clearSettings();
                 if (confirm('Reloading the page to apply new settings. Reloading now?')) location.reload();
             }
-        }))
+        })).append(divider())
         .append(button('Default', () => {
             $('#vse-setting-reloading-interval').prop('value', 5 * 60);
             $('#vse-setting-only-new-updates').prop('checked', true);
             $('#vse-setting-show-notifications').prop('checked', true);
             $('#vse-setting-show-gpa').prop('checked', true);
-        }))
+        })).append(divider())
         .append(button('Save', () => {
             VSE.Settings.reloadingInterval = Math.floor(parseFloat(document.getElementById('vse-setting-reloading-interval').value) * 1000);
             VSE.Settings.onlyNewUpdates = $('#vse-setting-only-new-updates').prop('checked');
@@ -218,7 +216,7 @@ function createSettingDiv() {
             VSE.Settings.showGPA = $('#vse-setting-show-gpa').prop('checked');
             VSE.Settings.storeSettings();
             if (confirm('Require reloading the page to apply new settings. Reloading now?')) location.reload();
-        }))
+        })).append(divider())
         .append(button('Close', () => {
             $(a_setting).click();
         }));

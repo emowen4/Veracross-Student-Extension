@@ -124,7 +124,7 @@ const VSE = new function () {
                     if (VSE.Settings.reloadingInterval === undefined || isNaN(VSE.Settings.reloadingInterval))
                         VSE.Settings.reloadingInterval = 5 * 60 * 1000;
                 }
-                $(document).ready(() => {
+                $(document).ready(function() {
                     createSettingDiv();
                     if (VSE.initExtension)
                         VSE.initExtension();
@@ -149,67 +149,52 @@ function School(name, code, gpa, exceptedClass = []) {
 
 function createSettingDiv() {
     // Add an icon and a button of the setting panel to the top navigation bar, and setup animations
-    let li_setting = document.createElement('li');
-    li_setting.classList.add('vx-PortalNav_Item');
-    let a_setting = document.createElement('a');
-    a_setting.href = '#';
-    a_setting.classList.add('vx-PortalNav_ItemLink');
-    $(a_setting)
-        .hover(() => { // when hover
-            a_setting.children[0].src = chrome.runtime.getURL('/images/icon-settings-hover.png');
-            $(a_setting).css('color', '#005FB1').css('background-color', '#FFF');
-        }, () => { // when unhover
-            a_setting.children[0].src = chrome.runtime.getURL('/images/icon-settings.png');
-            $(a_setting).css('color', '#FFF').css('background-color', '#005FB1');
+    let img_setting = $('<img style="margin-right:5px;margin-bottom:2px;vertical-align:middle;"/>')
+        .width(22).height(22).prop('src', chrome.runtime.getURL('/images/icon-settings.png'));
+    let a_setting = $('<a href="#"/>').addClass('vx-PortalNav_ItemLink')
+        .hover(function() { // when hover
+            $(this).css('color', '#005FB1').css('background-color', '#FFF')
+                .find('>:first-child').prop('src', chrome.runtime.getURL('/images/icon-settings-hover.png'));
+        }, function() { // when unhover
+            $(this).css('color', '#FFF').css('background-color', '#005FB1')
+                .find('>:first-child').prop('src', chrome.runtime.getURL('/images/icon-settings.png'));
         })
-        .click(() => {
-            a_setting.children[0].src = chrome.runtime.getURL('/images/icon-settings.png');
+        .click(function() {
+            $(this).css('color', '#FFF').css('background-color', '#005FB1')
+                .find('>:first-child').prop('src', chrome.runtime.getURL('/images/icon-settings.png'));
             $('div#vse-settings').toggle('fade', {}, 400);
             $('div#veracross-app-container').toggle('fade', {}, 400);
-            $(a_setting).css('color', '#FFF').css('background-color', '#005FB1');
-        });
-    let i_setting = document.createElement('img');
-    i_setting.src = chrome.runtime.getURL('/images/icon-settings.png');
-    i_setting.width = '22';
-    i_setting.height = '22';
-    i_setting.style.marginRight = '5px';
-    i_setting.style.marginBottom = '2px';
-    i_setting.style.verticalAlign = 'middle';
-    a_setting.appendChild(i_setting);
-    a_setting.innerHTML += '\n          Extension Settings';
-    li_setting.appendChild(a_setting);
-    document.getElementsByClassName('vx-PortalNav')[0].appendChild(li_setting);
+        })
+        .append(img_setting).append('\n          Extension Settings');
+    $('.vx-PortalNav')
+        .append($('<li/>').addClass('vx-PortalNav_Item').append(a_setting));
     // Create the setting div
-    let div_setting = document.createElement('div');
-    div_setting.className = 'vse app-container -width';
-    div_setting.id = 'vse-settings';
-    $(div_setting).hide();
+    let div_setting = $('<div/>').addClass('vse app-container -width').prop('id', 'vse-settings').hide();
     $('div.app-container').prop('id', 'veracross-app-container').after(div_setting);
     // create content div
-    let div_tooltip = document.createElement('div');
-    div_tooltip.className = 'screen-toolbar';
-    div_tooltip.innerHTML = '<span class="screen-title" style="text-align:left;font-size:1.15rem;display:block;color:#333333">\n    Extension Settings\n  </span>';
-    div_setting.appendChild(div_tooltip);
+    $('<div style="width:100%;height:60px;"/>').addClass('screen-toolbar')
+        .append($('<span style="text-align:left;font-size:1.15rem;display:block;color:#333333"/>')
+            .addClass('screen-title').text('\n    Extension Settings\n  '))
+        .appendTo(div_setting);
     // create top buttons
-    let div_buttons = document.createElement('div');
-    div_buttons.style.width = '100%';
-    div_buttons.style.height = '60px';
     function button(text, onclick) { return $('<button/>').text(text).click(onclick).addClass('vse-setting-button'); }
     function divider() { return $('<div style="width:6px;height:auto;display:inline-block;"/>'); }
-    $(div_buttons)
-        .append(button('Clear All Data', () => {
+    $('<div style="width:100%;height:60px;"/>')
+        .append(button('Clear All Data', function() {
             if (confirm('Are you sure to clear all the data including all the settings?')) {
                 clearSettings();
                 if (confirm('Reloading the page to apply new settings. Reloading now?')) location.reload();
             }
-        })).append(divider())
-        .append(button('Default', () => {
+        }))
+        .append(divider())
+        .append(button('Default', function() {
             $('#vse-setting-reloading-interval').prop('value', 5 * 60);
             $('#vse-setting-only-new-updates').prop('checked', true);
             $('#vse-setting-show-notifications').prop('checked', true);
             $('#vse-setting-show-gpa').prop('checked', true);
-        })).append(divider())
-        .append(button('Save', () => {
+        }))
+        .append(divider())
+        .append(button('Save', function() {
             VSE.Settings.reloadingInterval = Math.floor(parseFloat(document.getElementById('vse-setting-reloading-interval').value) * 1000);
             let onlyNewUpdatesBefore = VSE.Settings.onlyNewUpdates;
             VSE.Settings.onlyNewUpdates = $('#vse-setting-only-new-updates').prop('checked');
@@ -220,19 +205,20 @@ function createSettingDiv() {
                 setValue({'StoredData': []});
             VSE.Settings.storeSettings();
             if (confirm('Require reloading the page to apply new settings. Reloading now?')) location.reload();
-        })).append(divider())
-        .append(button('Close', () => {
+        }))
+        .append(divider())
+        .append(button('Close', function() {
             $(a_setting).click();
-        }));
-    div_setting.appendChild(div_buttons);
+        }))
+        .appendTo(div_setting);
+    // div_setting.appendChild(div_buttons);
     // create setting list
-    let div_content = document.createElement('div');
-    div_content.className = 'ae-grid vse';
-    let table_setting = document.createElement('table');
-    let form_setting = document.createElement('tbody');
-    form_setting.id = 'vse-setting-list';
-    table_setting.appendChild(form_setting);
-    div_setting.appendChild(table_setting);
+    // let table_setting = document.createElement('table');
+    // let form_setting = document.createElement('tbody');
+    // form_setting.id = 'vse-setting-list';
+    // table_setting.appendChild(form_setting);
+    // div_setting.appendChild(table_setting);
+    let form_setting = $('<tbody/>').addClass('vse-setting-list').appendTo($('<table/>').appendTo(div_setting));
     function addLine(label, input) {
         $('<tr/>').appendTo(form_setting)
             .append($('<th/>').append(label))
@@ -264,7 +250,7 @@ function createSettingDiv() {
 }
 
 // clearSettings();
-debugOn();
-debugStoredValues();
+// debugOn();
+// debugStoredValues();
 
 VSE.init();

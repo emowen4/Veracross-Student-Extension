@@ -126,7 +126,7 @@ function processClassData(tempData) {
                     notFound = false;
                 }
             }
-            if (notFound || match) {
+            if ((notFound && tempData[i].updateCount > 0) || match) {
                 updateCount += tempData[i].newUpdateCount;
                 updateClassCount++;
                 currentData.push(tempData[i]);

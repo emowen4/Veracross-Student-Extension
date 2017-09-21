@@ -50,7 +50,7 @@ function __init_Homepage() {
             let span_links = cours[i].getElementsByClassName('course-links')[0];
             let a_details = document.createElement('a');
             a_details.classList.add('class-link');
-            a_details.href = document.getElementsByClassName('course-grade')[0].href + '?vse-details';
+            a_details.href = cours[i].getElementsByClassName('course-grade')[0].href + '?vse-details';
             a_details.textContent = 'Analyze';
             span_links.appendChild(a_details);
         }
@@ -101,7 +101,7 @@ function __init_Class() {
             let span_links = cours[i].getElementsByClassName('website-links')[0];
             let a_details = document.createElement('a');
             a_details.classList.add('website-link');
-            a_details.href = document.getElementsByClassName('course-list-grade-link')[0].href + '?vse-details';
+            a_details.href = cours[i].getElementsByClassName('course-list-grade-link')[0].href + '?vse-details';
             a_details.textContent = 'Analyze';
             span_links.appendChild(a_details);
         }

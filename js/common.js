@@ -211,9 +211,13 @@ function createSettingDiv() {
         })).append(divider())
         .append(button('Save', () => {
             VSE.Settings.reloadingInterval = Math.floor(parseFloat(document.getElementById('vse-setting-reloading-interval').value) * 1000);
+            let onlyNewUpdatesBefore = VSE.Settings.onlyNewUpdates;
             VSE.Settings.onlyNewUpdates = $('#vse-setting-only-new-updates').prop('checked');
             VSE.Settings.showNotification = $('#vse-setting-show-notifications').prop('checked');
             VSE.Settings.showGPA = $('#vse-setting-show-gpa').prop('checked');
+            if (onlyNewUpdatesBefore != VSE.Settings.onlyNewUpdates)
+                // Prevent the problem that, after changing "Only New Updates" option, the display of classes' new updates maybe wrong
+                setValue({'StoredData': []});
             VSE.Settings.storeSettings();
             if (confirm('Require reloading the page to apply new settings. Reloading now?')) location.reload();
         })).append(divider())
@@ -260,7 +264,7 @@ function createSettingDiv() {
 }
 
 // clearSettings();
-// debugOn();
-// debugStoredValues();
+debugOn();
+debugStoredValues();
 
 VSE.init();

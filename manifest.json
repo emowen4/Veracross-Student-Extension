@@ -3,7 +3,7 @@
   "name": "Veracross Student Extension",
   "short_name": "VSE",
   "author": "EmOwen4",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "The extension for Veracross student clients.",
   "homepage_url": "https://github.com/emowen/Veracross-Student-Extension",
   "icons": {
@@ -63,6 +63,12 @@
     {
       "matches": [
         "https://portals.veracross.com/*/student/*"
+      ],
+      "exclude_matches": [
+        "https://portals.veracross.com/*/student",
+        "https://portals.veracross.com/*/student/student/overview",
+        "https://portals.veracross.com/*/student/student/*/classes/*/grade_detail",
+        "https://portals.veracross.com/*/student/student/*/classes/*/grade_detail?vse-details"
       ],
       "css": [
         "/css/jquery-ui.min.css",

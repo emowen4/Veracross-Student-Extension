@@ -3,9 +3,9 @@
 function Course(name, id, grade, letterGrade, update_count, ele_cour = null) {
     this.name = name;
     this.id = id;
-    this.grade = grade < 0 ? 0 : (grade > 100 ? 100 : grade);
+    this.grade = grade <= 0 ? 0 : (grade >= 100 ? 100 : grade);
     this.letterGrade = letterGrade || ''; // not used yet
-    this.updateCount = update_count < 0 ? 0 : update_count;
+    this.updateCount = update_count <= 0 ? 0 : update_count;
     this.newUpdateCount = this.updateCount;
     this.domElement = ele_cour;
 }
@@ -24,14 +24,12 @@ function __init_Homepage() {
         if (VSE.School.exceptFor(cour_name)) continue;
         let noti_cnt = Number.parseInt(cours[i].getElementsByClassName('notification-badge')[0].innerText.trim());
         let sel_num_grade = cours[i].getElementsByClassName('numeric-grade');
-        if (noti_cnt > 0) {
-            if (sel_num_grade.length === 1) {
+            if (noti_cnt >= 0 && sel_num_grade.length === 1) {
                 let cour_grade = sel_num_grade[0].innerText;
                 let letter_grade = cours[i].getElementsByClassName('letter-grade')[0].innerText;
                 let id = btoa(cour_name);
                 cours[i].id = id;
                 tempData.push(new Course(cour_name, id, cour_grade, letter_grade, noti_cnt, cours[i]));
-            }
         }
     }
     let processedData = processClassData(tempData);
@@ -77,14 +75,12 @@ function __init_Class() {
         if (VSE.School.exceptFor(cour_name)) continue;
         let noti_cnt = Number.parseInt(cours[i].getElementsByClassName('notification-badge')[0].innerText.trim());
         let sel_num_grade = cours[i].getElementsByClassName('course-numeric-grade');
-        if (noti_cnt > 0) {
-            if (sel_num_grade.length === 1) {
-                let cour_grade = sel_num_grade[0].innerText;
-                let letter_grade = cours[i].getElementsByClassName('course-letter-grade')[0].innerText;
-                let id = btoa(cour_name);
-                cours[i].id = id;
-                tempData.push(new Course(cour_name, id, cour_grade, letter_grade, noti_cnt, cours[i]));
-            }
+        if (noti_cnt >= 0 && sel_num_grade.length === 1) {
+            let cour_grade = sel_num_grade[0].innerText;
+            let letter_grade = cours[i].getElementsByClassName('course-letter-grade')[0].innerText;
+            let id = btoa(cour_name);
+            cours[i].id = id;
+            tempData.push(new Course(cour_name, id, cour_grade, letter_grade, noti_cnt, cours[i]));
         }
     }
     let processedData = processClassData(tempData);
@@ -109,7 +105,7 @@ function __init_Class() {
             a_details.textContent = 'Analyze';
             span_links.appendChild(a_details);
         }
-        $('div.student-overview > h3.student-overview-heading')[0]
+        $('#veracross-app-container > div.student-overview > h3:nth-child(4)')[0]
             .textContent += VSE.Settings.showGPA ? (' (Current GPA: ' + ((totalGPA / tempData.length).toFixed(3)) + ')') : '';
     }
     postInit(processedData);
@@ -119,8 +115,8 @@ function processClassData(tempData) {
     let currentData;
     let updateCount = 0, updateClassCount = 0;
     // Process the data, remove duplicated classes, calculate update count
+    currentData = [];
     if (VSE.Settings.onlyNewUpdates) {
-        currentData = [];
         for (let i = 0; i < tempData.length; i++) {
             let match = false, notFound = true;
             for (let j = 0; notFound && j < VSE.Settings.storedData.length; j++) {
@@ -130,14 +126,16 @@ function processClassData(tempData) {
                     notFound = false;
                 }
             }
-            if (notFound || match) {
+            if ((notFound && tempData[i].updateCount > 0) || match) {
                 updateCount += tempData[i].newUpdateCount;
                 updateClassCount++;
                 currentData.push(tempData[i]);
             }
         }
     } else {
-        currentData = tempData;
+        for (let i = 0; i < tempData.length; i++)
+            if (tempData[i].updateCount > 0)
+                currentData.push(tempData[i]);
         updateClassCount = currentData.length;
         for (let i = 0; i < updateClassCount; i++)
             updateCount += currentData[i].updateCount;

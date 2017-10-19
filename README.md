@@ -7,11 +7,12 @@ I only test the extension on my account, so if you find any bugs, please contact
 1. Check the grades' updates automatically
 2. Notify the change of grades
 3. Calculate and show the GPA
+4. Analyze grades in detail for each class
 
 ### TODO
  - [X] Check and notify and grades automatically and periodically
  - [X] Calculate GPAs
- - [ ] Setting panel
+ - [X] Setting panel
  - [ ] Grade statistics in Grade Detail page
 
 ### Lib Used

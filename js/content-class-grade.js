@@ -1,34 +1,23 @@
 'use strict';
 
-function initExtension() {
-    $('div.left-controls').children('a').on('click', function (e) {
-        $('iframe').show();
-        $('#vse-details').hide();
-    })
-    var detailTab = document.createElement('a');
-    detailTab.href = '#';
-    detailTab.textContent = 'Detail Charts';
-    detailTab.onclick = function (e) {
-        $('iframe').hide();
-        $('#vse-details').show();
+function gradingPeriodToQuarter(gradingPeriod) {
+    switch (gradingPeriod) {
+        case 2: return 1;
+        case 4: return 2;
+        case 8: return 3;
+        case 10: return 4;
+        default: return -1;
     }
-    document.getElementsByClassName('left-controls')[0].appendChild(detailTab);
-    if (document.URL.search('vse-details') != -1) detailTab.click();
-
-    var detailDiv = document.createElement('div');
-    detailDiv.id = 'vse-details';
-    detailDiv.classList.add('vse');
-    document.getElementsByClassName('sunflower-document')[0].appendChild(detailDiv);
-    
-    var chartDiv = document.createElement('div');
-    chartDiv.id = 'vse-details-charts';
-    chartDiv.classList.add('vse');
-    detailDiv.appendChild(chartDiv);
-
-    var assignmentsDiv = document.createElement('div');
-    assignmentsDiv.id = 'vse-details-assignments';
-    assignmentsDiv.classList.add('vse');
-    detailDiv.appendChild(assignmentsDiv);
 }
 
-initExtension();
+function initFunc() {
+    console.log('Loaded at ' + new Date().toLocaleTimeString('en-US', { hour12: false }));
+    let gradingPeriod = gradingPeriodToQuarter(Number.parseInt(location.search.match(/grading_period=(\d+)/)[1]));
+    console.log('grading period: ' + gradingPeriod);
+}
+
+VSE.initExtension = () => {
+    $(() => {
+        if (document.title == 'Veracross Documents') initFunc();
+    });
+};

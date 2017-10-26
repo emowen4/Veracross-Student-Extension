@@ -54,8 +54,8 @@ function __init_Homepage() {
             a_details.textContent = 'Analyze';
             span_links.appendChild(a_details);
         }
-        $('body > div.app-container.-width > div.ae-grid > div.ae-grid__item.item-md-8.portal-screen-region > div > div:nth-child(3) > div > div > div')[0]
-            .textContent += VSE.Settings.showGPA ? (' (Current GPA: ' + ((totalGPA / tempData.length).toFixed(3)) + ')') : '';
+        $('body > div.app-container.-width > div.ae-grid > div.ae-grid__item.item-md-8.portal-screen-region > div > div:nth-child(3) > div > div > div')
+            .append(VSE.Settings.showGPA ? (' (Current GPA: ' + ((totalGPA / tempData.length).toFixed(3)) + ')') : '');
     }
 
     postInit(processedData);
@@ -105,8 +105,8 @@ function __init_Class() {
             a_details.textContent = 'Analyze';
             span_links.appendChild(a_details);
         }
-        $('#veracross-app-container > div.student-overview > h3:nth-child(4)')[0]
-            .textContent += VSE.Settings.showGPA ? (' (Current GPA: ' + ((totalGPA / tempData.length).toFixed(3)) + ')') : '';
+        $('#veracross-app-container > div.student-overview > h3:nth-child(4)')
+            .append(VSE.Settings.showGPA ? (' (Current GPA: ' + ((totalGPA / tempData.length).toFixed(3)) + ')') : '');
     }
     postInit(processedData);
 }

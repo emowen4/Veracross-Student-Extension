@@ -63,6 +63,15 @@ const SchoolList = {
 };
 
 const VSE = new function () {
+    let $this = this;
+    this.version = chrome.runtime.getManifest().version;
+    this.onVersionUpdate = function(oldVersion) {
+        // nasty
+        switch (oldVersion) {
+            case '':
+                break;
+        }
+    };
     this.SchoolCode = window.location.pathname.match(/\/([a-zA-Z0-9]+)\/?.*/)[1];
     this.isSupported = this.SchoolCode in SchoolList;
     this.School = this.isSupported ? SchoolList[this.SchoolCode] : new School('Unknown', 'unknown', [[],[],[],[]]);
@@ -71,12 +80,13 @@ const VSE = new function () {
     this.Settings.store = function() {};
     this.Settings.storeSettings = function() {
         setValue({
-            'LastUpdateCount': VSE.Settings.lastUpdateCount,
-            'StoredData': VSE.Settings.storedData,
-            'OnlyNewUpdates': VSE.Settings.onlyNewUpdates,
-            'ShowNotification': VSE.Settings.showNotification,
-            'ShowGPA': VSE.Settings.showGPA,
-            'ReloadingInterval': VSE.Settings.reloadingInterval
+            'Version': $this.Settings.version,
+            'LastUpdateCount': $this.Settings.lastUpdateCount,
+            'StoredData': $this.Settings.storedData,
+            'OnlyNewUpdates': $this.Settings.onlyNewUpdates,
+            'ShowNotification': $this.Settings.showNotification,
+            'ShowGPA': $this.Settings.showGPA,
+            'ReloadingInterval': $this.Settings.reloadingInterval,
         });
     };
     this.calcGPA = function (clz, grade, school_code = this.School.code) {
@@ -84,7 +94,8 @@ const VSE = new function () {
         if (clz.startsWith('AP')) ind = 0;
         else if (clz.startsWith('Honors')) ind = 1;
         else if (clz.startsWith('Advance')) ind = 2;
-        return grade >= 0 ? SchoolList[school_code].gpa[ind][Math.round(grade)] : 0;
+        grade = grade > 100 ? 100 : (grade < 0 ? 0 : grade);
+        return SchoolList[school_code].gpa[ind][Math.round(grade)];
     };
     this.showDetails = window.location.href.endsWith('vse-details');
     this.init = function() {
@@ -92,42 +103,45 @@ const VSE = new function () {
             if (chrome.runtime.lastError)
                 console.log(chrome.runtime.lastError.message);
             else
-                VSE.Settings.firstTimeInstall = items['FirstTimeInstall'];
-            if (VSE.Settings.firstTimeInstall === undefined || VSE.Settings.firstTimeInstall === null)
-                VSE.Settings.firstTimeInstall = true;
-            if (VSE.Settings.firstTimeInstall)
+                $this.Settings.firstTimeInstall = items['FirstTimeInstall'];
+            if ($this.Settings.firstTimeInstall === undefined || $this.Settings.firstTimeInstall === null)
+                $this.Settings.firstTimeInstall = true;
+            if ($this.Settings.firstTimeInstall)
                 console.log('First time using the extension. Initialize default settings.');
             setValue({'FirstTimeInstall': false});
             getValue(null, function (items) {
-                if (VSE.firstTimeInstall || chrome.runtime.lastError) {
-                    VSE.Settings.lastUpdateCount = 0;
-                    VSE.Settings.storedData = [];
-                    VSE.Settings.onlyNewUpdates = true;
-                    VSE.Settings.showNotification = true;
-                    VSE.Settings.showGPA = true;
-                    VSE.Settings.reloadingInterval = 5 * 60 * 1000;
-                    if (VSE.Settings.firstTimeInstall) {
+                if ($this.Settings.firstTimeInstall || chrome.runtime.lastError) {
+                    if (chrome.runtime.lastError)
+                        console.error('Load setting data failed.\n' + chrome.runtime.lastError.message);
+                    $this.Settings.lastUpdateCount = 0;
+                    $this.Settings.storedData = [];
+                    $this.Settings.onlyNewUpdates = true;
+                    $this.Settings.showNotification = true;
+                    $this.Settings.showGPA = true;
+                    $this.Settings.reloadingInterval = 5 * 60 * 1000;
+                    if ($this.Settings.firstTimeInstall) {
                         setValue({
-                            'ReloadingInterval': reloadingInterval,
-                            'OnlyNewUpdates': onlyNewUpdates,
-                            'ShowNotification': postInit,
-                            'ShowGPA': showGPA
+                            'ReloadingInterval': $this.Settings.reloadingInterval,
+                            'OnlyNewUpdates': $this.Settings.onlyNewUpdates,
+                            'ShowNotification': $this.Settings.showNotification,
+                            'ShowGPA': $this.Settings.showGPA,
                         });
                     }
                 } else {
-                    VSE.Settings.lastUpdateCount = items['LastUpdateCount'];
-                    VSE.Settings.storedData = items['StoredData'];
-                    VSE.Settings.onlyNewUpdates = items['OnlyNewUpdates'];
-                    VSE.Settings.showNotification = items['ShowNotification'];
-                    VSE.Settings.showGPA = items['ShowGPA'];
-                    VSE.Settings.reloadingInterval = items['ReloadingInterval'];
-                    if (VSE.Settings.reloadingInterval === undefined || isNaN(VSE.Settings.reloadingInterval))
-                        VSE.Settings.reloadingInterval = 5 * 60 * 1000;
+                    $this.onVersionUpdate(items['Version'] || '');
+                    $this.Settings.lastUpdateCount = items['LastUpdateCount'];
+                    $this.Settings.storedData = items['StoredData'];
+                    $this.Settings.onlyNewUpdates = items['OnlyNewUpdates'];
+                    $this.Settings.showNotification = items['ShowNotification'];
+                    $this.Settings.showGPA = items['ShowGPA'];
+                    $this.Settings.reloadingInterval = items['ReloadingInterval'];
+                    if ($this.Settings.reloadingInterval === undefined || isNaN($this.Settings.reloadingInterval))
+                        $this.Settings.reloadingInterval = 5 * 60 * 1000;
                 }
-                $(document).ready(function() {
+                $(function() {
                     createSettingDiv();
-                    if (VSE.initExtension)
-                        VSE.initExtension();
+                    if ($this.initExtension)
+                        $this.initExtension();
                 });
             });
         });

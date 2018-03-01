@@ -64,12 +64,12 @@ function __init_Homepage() {
             let span_links = cours[i].getElementsByClassName('course-links')[0];
             let a_details = document.createElement('a');
             a_details.classList.add('class-link');
-            a_details.href = document.getElementsByClassName('course-grade')[0].href + '?vse-details';
+            a_details.href = cours[i].getElementsByClassName('course-grade')[0].href + '?vse-details';
             a_details.textContent = 'Analyze';
             span_links.appendChild(a_details);
         }
-        $('body > div.app-container.-width > div.ae-grid > div.ae-grid__item.item-md-8.portal-screen-region > div > div:nth-child(3) > div > div > div')[0]
-            .textContent += VSE.Settings.showGPA ? (' (Current GPA: ' + ((totalGPA / tempData.length).toFixed(3)) + ')') : '';
+        $('body > div.app-container.-width > div.ae-grid > div.ae-grid__item.item-md-8.portal-screen-region > div > div:nth-child(3) > div > div > div')
+            .append(VSE.Settings.showGPA ? (' (Current GPA: ' + ((totalGPA / tempData.length).toFixed(3)) + ')') : '');
     }
 
     postInit(processedData);
@@ -115,12 +115,12 @@ function __init_Class() {
             let span_links = cours[i].getElementsByClassName('website-links')[0];
             let a_details = document.createElement('a');
             a_details.classList.add('website-link');
-            a_details.href = document.getElementsByClassName('course-list-grade-link')[0].href + '?vse-details';
+            a_details.href = cours[i].getElementsByClassName('course-list-grade-link')[0].href + '?vse-details';
             a_details.textContent = 'Analyze';
             span_links.appendChild(a_details);
         }
-        $('#veracross-app-container > div.student-overview > h3:nth-child(4)')[0]
-            .textContent += VSE.Settings.showGPA ? (' (Current GPA: ' + ((totalGPA / tempData.length).toFixed(3)) + ')') : '';
+        $('#veracross-app-container > div.student-overview > h3:nth-child(4)')
+            .append(VSE.Settings.showGPA ? (' (Current GPA: ' + ((totalGPA / tempData.length).toFixed(3)) + ')') : '');
     }
     postInit(processedData);
 }

@@ -17,6 +17,20 @@ function __init_Homepage() {
         return;
     }
 
+    // window.Portals.config.user_id
+    // https://documents.veracross.com/jcs/schedule/16301?key=_
+
+    let div_schedule = $('<div class="ae-grid__item item-sm-12 portal-screen-block" data-screen-region="1"/>')
+        .append($('<div class="screen-component"/>')
+            .append($('<div class="component-icon-link"/>')
+                .append($('<a href="#" target="_self" onclick="window.open(\'https://documents.veracross.com/jcs/schedule/\' + window.Portals.config.user_id + \'?key=_\')"/>')
+                    .addClass('icon-block')
+                    .css('height', '75px').css('background-color', 'rgba(3, 118, 193, 0.1)').css('color', 'rgb(3, 118, 193)')
+                    .append($('<i class="nc-icon-glyph ui-1_calendar-60" style="font-size: 24px;"/>'))
+                    .append('<div class="icon-description" style="font-size: 14px;">Current Class Schedule</div>'))));
+    $('#veracross-app-container > div.ae-grid > div.ae-grid__item.item-md-4.portal-screen-region > div > div:nth-child(2)')
+        .after(div_schedule);
+
     // Pre-process class data, remove all the classes that not count or has no grades
     let tempData = [];
     for (let i = 0; i < cours.length; i++) {

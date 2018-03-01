@@ -18,8 +18,7 @@ function __init_Homepage() {
     }
 
     // window.Portals.config.user_id
-    // https://documents.veracross.com/jcs/schedule/16301?key=_
-
+    // https://documents.veracross.com/jcs/schedule/<user_id>?key=_
     let div_schedule = $('<div class="ae-grid__item item-sm-12 portal-screen-block" data-screen-region="1"/>')
         .append($('<div class="screen-component"/>')
             .append($('<div class="component-icon-link"/>')

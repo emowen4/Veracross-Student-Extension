@@ -256,9 +256,12 @@ function createSettingDiv() {
 window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
 ga('create', '0', 'auto');
 ga('send', 'AutoRefresh');
-(function() {
-var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-ga.src = 'https://www.google-analytics.com/analytics.js';
-var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+(function () {
+    var ga = document.createElement('script');
+    ga.type = 'text/javascript';
+    ga.async = true;
+    ga.src = 'https://www.google-analytics.com/analytics.js';
+    var s = document.getElementsByTagName('head')[0];
+    s.appendChild(ga);
 })();
 VSE.init();

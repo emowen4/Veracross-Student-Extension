@@ -3,7 +3,7 @@
   "name": "Veracross Student Extension",
   "short_name": "VSE",
   "author": "EmOwen4",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "The extension for Veracross student clients.",
   "homepage_url": "https://github.com/emowen/Veracross-Student-Extension",
   "icons": {
@@ -88,5 +88,6 @@
     "/js/*.js",
     "/images/*.png",
     "/css/*.css"
-  ]
+  ],
+  "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'"
 }

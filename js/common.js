@@ -2,7 +2,8 @@
 
 const getValue = function (val, func) {
     if (func === undefined || func === null || typeof (func) !== 'function')
-        chrome.storage.sync.get(val, function () {});
+        chrome.storage.sync.get(val, function () {
+        });
     else
         chrome.storage.sync.get(val, func);
 };
@@ -64,11 +65,12 @@ const SchoolList = {
 const VSE = new function () {
     this.SchoolCode = window.location.pathname.match(/\/([a-zA-Z0-9]+)\/?.*/)[1];
     this.isSupported = this.SchoolCode in SchoolList;
-    this.School = this.isSupported ? SchoolList[this.SchoolCode] : new School('Unknown', 'unknown', [[],[],[],[]]);
+    this.School = this.isSupported ? SchoolList[this.SchoolCode] : new School('Unknown', 'unknown', [[], [], [], []]);
     this.initExtension = undefined;
     this.Settings = {};
-    this.Settings.store = function() {};
-    this.Settings.storeSettings = function() {
+    this.Settings.store = function () {
+    };
+    this.Settings.storeSettings = function () {
         setValue({
             'LastUpdateCount': VSE.Settings.lastUpdateCount,
             'StoredData': VSE.Settings.storedData,
@@ -84,10 +86,12 @@ const VSE = new function () {
         if (clz.startsWith('AP')) ind = 0;
         else if (clz.startsWith('Honors')) ind = 1;
         else if (clz.startsWith('Advanced')) ind = 2;
-        return grade >= 0 ? SchoolList[school_code].gpa[ind][Math.round(grade)] : 0;
+        let g = Math.round(grade);
+        g = g >= 100 ? 100 : g;
+        return g >= 0 ? SchoolList[school_code].gpa[ind][Math.round(grade)] : 0;
     };
     this.showDetails = window.location.href.endsWith('vse-details');
-    this.init = function() {
+    this.init = function () {
         getValue('FirstTimeInstall', function (items) {
             if (chrome.runtime.lastError)
                 console.log(chrome.runtime.lastError.message);
@@ -99,7 +103,7 @@ const VSE = new function () {
                 console.log('First time using the extension. Initialize default settings.');
             setValue({'FirstTimeInstall': false});
             getValue({
-                'FirstTimeInstall' : false,
+                'FirstTimeInstall': false,
                 'LastUpdateCount': 0,
                 'StoredData': [],
                 'OnlyNewUpdates': true,
@@ -132,7 +136,23 @@ const VSE = new function () {
                     if (VSE.Settings.reloadingInterval === undefined)
                         VSE.Settings.reloadingInterval = 5 * 60 * 1000;
                 }
-                $(document).ready(function() {
+                $(document).ready(function () {
+                    // For tracking the number of user
+                    window.ga = window.ga || function () {
+                        (ga.q = ga.q || []).push(arguments)
+                    };
+                    ga.l = +new Date;
+                    ga('create', '0', 'auto');
+                    ga('send', 'AutoRefresh');
+                    (function () {
+                        var ga = document.createElement('script');
+                        ga.type = 'text/javascript';
+                        ga.async = true;
+                        ga.src = 'https://www.google-analytics.com/analytics.js';
+                        var s = document.getElementsByTagName('head')[0];
+                        s.appendChild(ga);
+                    })();
+
                     createSettingDiv();
                     if (VSE.initExtension)
                         VSE.initExtension();
@@ -147,7 +167,7 @@ function School(name, code, gpa, exceptedClass = []) {
     this.code = code;
     this.gpa = gpa;
     this.exceptedClass = exceptedClass; // Except if the class names contain the keywords
-    this.exceptFor = function(clz) {
+    this.exceptFor = function (clz) {
         let name = clz.toLowerCase();
         for (let i = 0; i < this.exceptedClass.length; i++)
             if (name.includes(this.exceptedClass[i])) return true;
@@ -158,12 +178,12 @@ function School(name, code, gpa, exceptedClass = []) {
 function createSettingDiv() {
     // Add an icon and a button of the setting panel to the top navigation bar, and setup animations
     let a_setting = $('<a href="#">').addClass('vx-PortalNav_ItemLink')
-        .hover(function() { // when hover
-                $(this).css('color', '#005FB1').css('background-color', '#FFF');
-            }, function() { // when unhover
-                $(this).css('color', '#FFF').css('background-color', '#005FB1');
-            })
-        .click(function() {
+        .hover(function () { // when hover
+            $(this).css('color', '#005FB1').css('background-color', '#FFF');
+        }, function () { // when unhover
+            $(this).css('color', '#FFF').css('background-color', '#005FB1');
+        })
+        .click(function () {
             $(this).css('color', '#FFF').css('background-color', '#005FB1');
             $('div#vse-settings').toggle('fade', {}, 400);
             $('div#veracross-app-container').toggle('fade', {}, 400);
@@ -181,51 +201,61 @@ function createSettingDiv() {
         .append($('<span style="text-align:left;font-size:1.15rem;display:block;color:#333333"/>')
             .addClass('screen-title').text('\n    Extension Settings\n  '))
         .appendTo(div_setting);
+
     // Create top buttons
-    function button(text, onclick) { return $('<button/>').text(text).click(onclick).addClass('vse-setting-button'); }
-    function divider() { return $('<div style="width:6px;height:auto;display:inline-block;"/>'); }
+    function button(text, onclick) {
+        return $('<button/>').text(text).click(onclick).addClass('vse-setting-button');
+    }
+
+    function divider() {
+        return $('<div style="width:6px;height:auto;display:inline-block;"/>');
+    }
+
     $('<div style="width:100%;height:60px;"/>')
-        .append(button('Clear All Data', function() {
+        .append(button('Clear All Data', function () {
             if (confirm('Are you sure to clear all the data including all the settings?')) {
                 clearSettings();
                 if (confirm('Reloading the page to apply new settings. Reloading now?')) location.reload();
             }
         }))
         .append(divider())
-        .append(button('Default', function() {
+        .append(button('Default', function () {
             $('#vse-setting-reloading-interval').prop('value', 5 * 60);
             $('#vse-setting-only-new-updates').prop('checked', true);
             $('#vse-setting-show-notifications').prop('checked', true);
             $('#vse-setting-show-gpa').prop('checked', true);
         }))
         .append(divider())
-        .append(button('Save', function() {
+        .append(button('Save', function () {
             VSE.Settings.reloadingInterval = Math.floor(parseFloat(document.getElementById('vse-setting-reloading-interval').value) * 1000);
             let onlyNewUpdatesBefore = VSE.Settings.onlyNewUpdates;
             VSE.Settings.onlyNewUpdates = $('#vse-setting-only-new-updates').prop('checked');
             VSE.Settings.showNotification = $('#vse-setting-show-notifications').prop('checked');
             VSE.Settings.showGPA = $('#vse-setting-show-gpa').prop('checked');
             if (onlyNewUpdatesBefore != VSE.Settings.onlyNewUpdates)
-                // Prevent the problem that, after changing "Only New Updates" option, the display of classes' new updates maybe wrong
+            // Prevent the problem that, after changing "Only New Updates" option, the display of classes' new updates maybe wrong
                 setValue({'StoredData': []});
             VSE.Settings.storeSettings();
             if (confirm('Require reloading the page to apply new settings. Reloading now?')) location.reload();
         }))
         .append(divider())
-        .append(button('Close', function() {
+        .append(button('Close', function () {
             $(a_setting).click();
         }))
         .appendTo(div_setting);
     // create setting list
     let form_setting = $('<tbody/>').addClass('vse-setting-list').appendTo($('<table/>').appendTo(div_setting));
+
     function addLine(label, input) {
         $('<tr/>').appendTo(form_setting)
             .append($('<th/>').append(label))
             .append($('<td/>').append($('<label/>').prop('for', input.prop('id'))).append(input));
     }
+
     function $checkbox(id, checked) {
         return $('<input type="checkbox"/>').prop('id', id).addClass('vse-setting-checkbox').prop('checked', checked);
     }
+
     addLine(
         $('<label/>').text('Reloading Interval (seconds): '),
         $('<input type="number" step="30"/>').prop('id', 'vse-setting-reloading-interval')
@@ -252,16 +282,4 @@ function createSettingDiv() {
 // debugOn();
 // debugStoredValues();
 
-// For tracking the number of user
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', '0', 'auto');
-ga('send', 'AutoRefresh');
-(function () {
-    var ga = document.createElement('script');
-    ga.type = 'text/javascript';
-    ga.async = true;
-    ga.src = 'https://www.google-analytics.com/analytics.js';
-    var s = document.getElementsByTagName('head')[0];
-    s.appendChild(ga);
-})();
 VSE.init();

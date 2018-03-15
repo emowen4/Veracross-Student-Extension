@@ -87,8 +87,7 @@ const VSE = new function () {
         else if (clz.startsWith('Honors')) ind = 1;
         else if (clz.startsWith('Advanced')) ind = 2;
         let g = Math.round(grade);
-        g = g >= 100 ? 100 : g;
-        return g >= 0 ? SchoolList[school_code].gpa[ind][Math.round(grade)] : 0;
+        return SchoolList[school_code].gpa[ind][g >= 100 ? 100 : (g <= 0 ? 0 : g)];
     };
     this.showDetails = window.location.href.endsWith('vse-details');
     this.init = function () {
@@ -138,12 +137,6 @@ const VSE = new function () {
                 }
                 $(document).ready(function () {
                     // For tracking the number of user
-                    window.ga = window.ga || function () {
-                        (ga.q = ga.q || []).push(arguments)
-                    };
-                    ga.l = +new Date;
-                    ga('create', '0', 'auto');
-                    ga('send', 'AutoRefresh');
                     (function () {
                         var ga = document.createElement('script');
                         ga.type = 'text/javascript';
@@ -152,6 +145,12 @@ const VSE = new function () {
                         var s = document.getElementsByTagName('head')[0];
                         s.appendChild(ga);
                     })();
+                    window.ga = window.ga || function () {
+                        (ga.q = ga.q || []).push(arguments)
+                    };
+                    ga.l = +new Date;
+                    ga('create', '0', 'auto');
+                    ga('send', 'AutoRefresh');
 
                     createSettingDiv();
                     if (VSE.initExtension)

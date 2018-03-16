@@ -67,6 +67,7 @@ const VSE = new function () {
     this.isSupported = this.SchoolCode in SchoolList;
     this.School = this.isSupported ? SchoolList[this.SchoolCode] : new School('Unknown', 'unknown', [[], [], [], []]);
     this.initExtension = undefined;
+    this.Portals = {};
     this.Settings = {};
     this.Settings.store = function () {
     };
@@ -89,7 +90,6 @@ const VSE = new function () {
         let g = Math.round(grade);
         return SchoolList[school_code].gpa[ind][g >= 100 ? 100 : (g <= 0 ? 0 : g)];
     };
-    this.showDetails = window.location.href.endsWith('vse-details');
     this.init = function () {
         getValue('FirstTimeInstall', function (items) {
             if (chrome.runtime.lastError)

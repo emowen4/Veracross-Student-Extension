@@ -22,7 +22,7 @@ function __init_Homepage() {
     let div_schedule = $('<div class="ae-grid__item item-sm-12 portal-screen-block" data-screen-region="1"/>')
         .append($('<div class="screen-component"/>')
             .append($('<div class="component-icon-link"/>')
-                .append($('<a href="#" target="_self" onclick="window.open(\'https://documents.veracross.com/jcs/schedule/\' + window.Portals.config.user_id + \'?key=_\')"/>')
+                .append($('<a href="#" target="_self"onclick="window.open(\'https://documents.veracross.com/' + window.Portals.config.client + '/schedule/\' + window.Portals.config.user_id + \'?key=_\')"/>')
                     .addClass('icon-block')
                     .css('height', '75px').css('background-color', 'rgba(3, 118, 193, 0.1)').css('color', 'rgb(3, 118, 193)')
                     .append($('<i class="nc-icon-glyph ui-1_calendar-60" style="font-size: 24px;"/>'))

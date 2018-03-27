@@ -22,12 +22,12 @@ function __init_Homepage() {
     let div_schedule = $('<div class="ae-grid__item item-sm-12 portal-screen-block" data-screen-region="1"/>')
         .append($('<div class="screen-component"/>')
             .append($('<div class="component-icon-link"/>')
-                .append($('<a href="#" target="_self"onclick="window.open(\'https://documents.veracross.com/' + window.Portals.config.client + '/schedule/\' + window.Portals.config.user_id + \'?key=_\')"/>')
+                .append($('<a href="#" target="_self" onclick="window.open(\'https://documents.veracross.com/\' + window.Portals.config.client + \'/schedule/\' + window.Portals.config.user_id + \'?key=_\')"/>')
                     .addClass('icon-block')
                     .css('height', '75px').css('background-color', 'rgba(3, 118, 193, 0.1)').css('color', 'rgb(3, 118, 193)')
                     .append($('<i class="nc-icon-glyph ui-1_calendar-60" style="font-size: 24px;"/>'))
                     .append('<div class="icon-description" style="font-size: 14px;">Current Class Schedule</div>'))));
-    $('#veracross-app-container > div.ae-grid > div.ae-grid__item.item-md-4.portal-screen-region > div > div:nth-child(2)')
+    $('#veracross-app-container').find('> div.ae-grid > div.ae-grid__item.item-md-4.portal-screen-region > div > div:nth-child(2)')
         .after(div_schedule);
 
     // Pre-process class data, remove all the classes that not count or has no grades
@@ -118,7 +118,7 @@ function __init_Class() {
             a_details.textContent = 'Analyze';
             span_links.appendChild(a_details);
         }
-        $('#veracross-app-container > div.student-overview > h3:nth-child(4)')
+        $('#veracross-app-container').find('> div.student-overview > h3:nth-child(4)')
             .append(VSE.Settings.showGPA ? (' (Current GPA: ' + ((totalGPA / tempData.length).toFixed(3)) + ')') : '');
     }
     postInit(processedData);

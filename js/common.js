@@ -21,12 +21,8 @@ function debugOn() {
     chrome.storage.onChanged.addListener(function (changes, namespace) {
         for (let key in changes) {
             let storageChange = changes[key];
-            console.log('Storage key "%s" in namespace "%s" changed. ' +
-                'Old value was "%s", new value is "%s".',
-                key,
-                namespace,
-                storageChange.oldValue,
-                storageChange.newValue);
+            console.log('Storage key "%s" in namespace "%s" changed. Old value was "%s", new value is "%s".',
+                key, namespace, storageChange.oldValue, storageChange.newValue);
         }
     });
 }
@@ -59,7 +55,7 @@ const SchoolList = {
         new Array(70).fill(0).concat([1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.0, 4.1, 4.1, 4.2, 4.2, 4.3, 4.3, 4.4, 4.4, 4.4]),
         // Regular 3
         new Array(70).fill(0).concat([1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.0, 4.1, 4.1, 4.2, 4.2, 4.3, 4.3, 4.4, 4.4, 4.4])
-    ], ['senior project', 'lunch', 'advisory', 'college planning', 'unscheduled'])
+    ], ['senior project', 'lunch', 'advisory', 'college planning', 'physical education', 'freshmen seminar', 'unscheduled'])
 };
 
 const VSE = new function () {
@@ -138,11 +134,11 @@ const VSE = new function () {
                 $(document).ready(function () {
                     // For tracking the number of user
                     (function () {
-                        var ga = document.createElement('script');
+                        let ga = document.createElement('script');
                         ga.type = 'text/javascript';
                         ga.async = true;
                         ga.src = 'https://www.google-analytics.com/analytics.js';
-                        var s = document.getElementsByTagName('head')[0];
+                        let s = document.getElementsByTagName('head')[0];
                         s.appendChild(ga);
                     })();
                     window.ga = window.ga || function () {
@@ -153,6 +149,7 @@ const VSE = new function () {
                     ga('send', 'AutoRefresh');
 
                     createSettingDiv();
+                    createGPADialog();
                     if (VSE.initExtension)
                         VSE.initExtension();
                 });
@@ -231,7 +228,7 @@ function createSettingDiv() {
             VSE.Settings.onlyNewUpdates = $('#vse-setting-only-new-updates').prop('checked');
             VSE.Settings.showNotification = $('#vse-setting-show-notifications').prop('checked');
             VSE.Settings.showGPA = $('#vse-setting-show-gpa').prop('checked');
-            if (onlyNewUpdatesBefore != VSE.Settings.onlyNewUpdates)
+            if (onlyNewUpdatesBefore !== VSE.Settings.onlyNewUpdates)
             // Prevent the problem that, after changing "Only New Updates" option, the display of classes' new updates maybe wrong
                 setValue({'StoredData': []});
             VSE.Settings.storeSettings();
@@ -275,6 +272,70 @@ function createSettingDiv() {
     // jquery ui init at last
     $('button.vse-setting-button').button();
     $('input.vse-setting-checkbox').checkboxradio();
+}
+
+function createGPADialog() {
+    let table_gpa = $('<table/>')
+        .append($('<thead/>')
+            .append($('<tr/>')
+                .append($('<th/>').text('Grade'))
+                .append($('<th/>').text('Regular'))
+                .append($('<th/>').text('Advanced'))
+                .append($('<th/>').text('Honors'))
+                .append($('<th/>').text('AP'))));
+    let gpas = VSE.School.gpa;
+    console.log(gpas);
+    let tbody_gpa = $('<tbody style="overflow-y: scroll; overflow-x: hidden; height: 100px;">');
+    table_gpa.append(tbody_gpa);
+    for (let i = 100; i >= 0; i--) {
+        tbody_gpa.append($('<tr/>')
+            .append($('<td/>').text(i.toString()))
+            .append($('<td/>').text(gpas[3][i].toFixed(2)))
+            .append($('<td/>').text(gpas[2][i].toFixed(2)))
+            .append($('<td/>').text(gpas[1][i].toFixed(2)))
+            .append($('<td/>').text(gpas[0][i].toFixed(2))));
+    }
+    let dialog_gpa = $('<div id="vse-gpa-dialog"/>')
+        .append($('<div/>').addClass('vx-AccountModal_Header vse')
+            .append($('<h1/>').text('GPA Scale')))
+        .append($('<div/>').addClass('vx-AccountModal_Content vse')
+            .append(table_gpa))
+        .dialog({
+            autoOpen: false,
+            title: 'GPA Scale',
+            modal: true,
+            closeOnEscape: true,
+            draggable: false,
+            classes: {
+                'ui-dialog': 'vx-AccountModal',
+                'ui-dialog-titlebar': 'vse-gpa-dialog-titlebar'
+            },
+            buttons: [
+                {
+                    text: 'Close',
+                    click: function () {
+                        $(this).dialog('close');
+                    }
+                }],
+            create: function () {
+                $('.vse-gpa-dialog-titlebar').css({
+                    'display': 'none'
+                });
+            }
+        });
+    $('body > nav > div > div.vx-Nav_Right > a:first-child')
+        .before($('<a href="#"/>').addClass('vx-Nav_Button')
+            .append($('<i/>').addClass('nc-icon-glyph ui-2_archive vx-Nav_InboxIcon'))
+            .append('GPA Scale')
+            .hover(function () { // when hover
+                $(this).css('color', '#005197').css('background-color', '#FFF');
+            }, function () { // when unhover
+                $(this).css('color', '#FFF').css('background-color', '#005197');
+            })
+            .click(function () {
+                $(this).css('color', '#FFF').css('background-color', '#005197');
+                dialog_gpa.dialog('open');
+            }));
 }
 
 // clearSettings();

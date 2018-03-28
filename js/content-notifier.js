@@ -1,10 +1,9 @@
 'use strict';
 
-function Course(name, id, grade, letterGrade, update_count, ele_cour = null) {
+function Course(name, id, grade, update_count, ele_cour = null) {
     this.name = name;
     this.id = id;
     this.grade = grade <= 0 ? 0 : (grade >= 100 ? 100 : grade);
-    this.letterGrade = letterGrade || ''; // not used yet
     this.updateCount = update_count <= 0 ? 0 : update_count;
     this.newUpdateCount = this.updateCount;
     this.domElement = ele_cour;
@@ -17,8 +16,6 @@ function __init_Homepage() {
         return;
     }
 
-    // window.Portals.config.user_id
-    // https://documents.veracross.com/jcs/schedule/<user_id>?key=_
     let div_schedule = $('<div class="ae-grid__item item-sm-12 portal-screen-block" data-screen-region="1"/>')
         .append($('<div class="screen-component"/>')
             .append($('<div class="component-icon-link"/>')
@@ -39,10 +36,9 @@ function __init_Homepage() {
         let sel_num_grade = cours[i].getElementsByClassName('numeric-grade');
             if (noti_cnt >= 0 && sel_num_grade.length === 1) {
                 let cour_grade = sel_num_grade[0].innerText;
-                let letter_grade = cours[i].getElementsByClassName('letter-grade')[0].innerText;
                 let id = btoa(cour_name);
                 cours[i].id = id;
-                tempData.push(new Course(cour_name, id, cour_grade, letter_grade, noti_cnt, cours[i]));
+                tempData.push(new Course(cour_name, id, cour_grade, noti_cnt, cours[i]));
         }
     }
     let processedData = processClassData(tempData);
@@ -90,10 +86,9 @@ function __init_Class() {
         let sel_num_grade = cours[i].getElementsByClassName('course-numeric-grade');
         if (noti_cnt >= 0 && sel_num_grade.length === 1) {
             let cour_grade = sel_num_grade[0].innerText;
-            let letter_grade = cours[i].getElementsByClassName('course-letter-grade')[0].innerText;
             let id = btoa(cour_name);
             cours[i].id = id;
-            tempData.push(new Course(cour_name, id, cour_grade, letter_grade, noti_cnt, cours[i]));
+            tempData.push(new Course(cour_name, id, cour_grade, noti_cnt, cours[i]));
         }
     }
     let processedData = processClassData(tempData);
@@ -127,22 +122,30 @@ function __init_Class() {
 function processClassData(tempData) {
     let currentData;
     let updateCount = 0, updateClassCount = 0;
+    let setGradeBefore = function(course, gradeBefore) {
+        let cour = new Course(course.name, course.id, course.grade, course.updateCount, course.newUpdateCount, course.domElement);
+        cour.gradeBefore = gradeBefore;
+        return cour;
+    };
     // Process the data, remove duplicated classes, calculate update count
     currentData = [];
     if (VSE.Settings.onlyNewUpdates) {
         for (let i = 0; i < tempData.length; i++) {
-            let match = false, notFound = true;
+            let match = false, notFound = true, gradeBefore = -1;
             for (let j = 0; notFound && j < VSE.Settings.storedData.length; j++) {
                 if (tempData[i].name === VSE.Settings.storedData[j].name && tempData[i].grade === VSE.Settings.storedData[j].grade) {
                     tempData[i].newUpdateCount -= VSE.Settings.storedData[j].updateCount;
-                    if (tempData[i].newUpdateCount > 0) match = true; // has new updates
+                    if (tempData[i].newUpdateCount > 0) {
+                        gradeBefore = VSE.Settings.storedData[j].grade;
+                        match = true; // has new updates
+                    }
                     notFound = false;
                 }
             }
             if ((notFound && tempData[i].updateCount > 0) || match) {
                 updateCount += tempData[i].newUpdateCount;
                 updateClassCount++;
-                currentData.push(tempData[i]);
+                currentData.push(setGradeBefore(tempData[i], gradeBefore === -1 ? tempData[i].grade : gradeBefore));
             }
         }
     } else {
@@ -167,6 +170,7 @@ function postInit(processedData) {
     $('a.notifications-link.highlight').removeClass('highlight');
     for (let i = 0; i < processedData.data.length; i++) {
         console.log(processedData.data[i].name + ' has ' + (processedData.data[i].updateCount > 1 ? processedData.data[i].updateCount + ' updates' : '1 update'));
+        $(processedData.data[i].domElement).find('a.course-grade').prop('title', processedData.data[i].gradeBefore.toFixed(2)).tooltip();
         $(processedData.data[i].domElement).find('.notification-badge').css('background', '#FF9933');
         $(processedData.data[i].domElement).find('.notification-label').css('color', '#FF9933');
     }

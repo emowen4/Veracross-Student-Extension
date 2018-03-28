@@ -17,6 +17,7 @@ const setValue = function (val, func) {
         chrome.storage.sync.set(val, func);
 };
 
+// noinspection JSUnusedGlobalSymbols
 function debugOn() {
     chrome.storage.onChanged.addListener(function (changes, namespace) {
         for (let key in changes) {
@@ -27,6 +28,7 @@ function debugOn() {
     });
 }
 
+// noinspection JSUnusedGlobalSymbols
 function debugStoredValues() {
     getValue(null, function (items) {
         console.log(items);
@@ -132,22 +134,6 @@ const VSE = new function () {
                         VSE.Settings.reloadingInterval = 5 * 60 * 1000;
                 }
                 $(document).ready(function () {
-                    // For tracking the number of user
-                    (function () {
-                        let ga = document.createElement('script');
-                        ga.type = 'text/javascript';
-                        ga.async = true;
-                        ga.src = 'https://www.google-analytics.com/analytics.js';
-                        let s = document.getElementsByTagName('head')[0];
-                        s.appendChild(ga);
-                    })();
-                    window.ga = window.ga || function () {
-                        (ga.q = ga.q || []).push(arguments)
-                    };
-                    ga.l = +new Date;
-                    ga('create', '0', 'auto');
-                    ga('send', 'AutoRefresh');
-
                     createSettingDiv();
                     createGPADialog();
                     if (VSE.initExtension)
@@ -275,8 +261,8 @@ function createSettingDiv() {
 }
 
 function createGPADialog() {
-    let table_gpa = $('<table/>')
-        .append($('<thead/>')
+    let table_gpa = $('<table id="table_gpa_scales"/>').css('text-align', 'center')
+        .append($('<thead>')
             .append($('<tr/>')
                 .append($('<th/>').text('Grade'))
                 .append($('<th/>').text('Regular'))
@@ -285,7 +271,7 @@ function createGPADialog() {
                 .append($('<th/>').text('AP'))));
     let gpas = VSE.School.gpa;
     console.log(gpas);
-    let tbody_gpa = $('<tbody style="overflow-y: scroll; overflow-x: hidden; height: 100px;">');
+    let tbody_gpa = $('<tbody style="overflow-y: scroll; overflow-x: hidden; height: 100%;">').css('text-align', 'center');
     table_gpa.append(tbody_gpa);
     for (let i = 100; i >= 0; i--) {
         tbody_gpa.append($('<tr/>')
@@ -306,34 +292,32 @@ function createGPADialog() {
             modal: true,
             closeOnEscape: true,
             draggable: false,
+            width: Math.min($(window).width() / 5 * 3, 600),
+            height: $(window).height() / 3 * 2,
             classes: {
                 'ui-dialog': 'vx-AccountModal',
                 'ui-dialog-titlebar': 'vse-gpa-dialog-titlebar'
             },
-            buttons: [
-                {
-                    text: 'Close',
-                    click: function () {
-                        $(this).dialog('close');
-                    }
-                }],
             create: function () {
                 $('.vse-gpa-dialog-titlebar').css({
                     'display': 'none'
                 });
             }
         });
+    $('body').on('click', '.ui-widget-overlay', function(){
+        dialog_gpa.dialog('close');
+    });
     $('body > nav > div > div.vx-Nav_Right > a:first-child')
         .before($('<a href="#"/>').addClass('vx-Nav_Button')
             .append($('<i/>').addClass('nc-icon-glyph ui-2_archive vx-Nav_InboxIcon'))
             .append('GPA Scale')
             .hover(function () { // when hover
-                $(this).css('color', '#005197').css('background-color', '#FFF');
+                $(this).css('background', 'rgba(255, 255, 255, .15)');
             }, function () { // when unhover
-                $(this).css('color', '#FFF').css('background-color', '#005197');
+                $(this).css('background', '#005197');
             })
             .click(function () {
-                $(this).css('color', '#FFF').css('background-color', '#005197');
+                $(this).css('background', '#005197');
                 dialog_gpa.dialog('open');
             }));
 }

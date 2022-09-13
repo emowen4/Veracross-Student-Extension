@@ -3,7 +3,7 @@
   "name": "Veracross Student Extension",
   "short_name": "VSE",
   "author": "EmOwen4",
-  "version": "3.2.7",
+  "version": "3.2.8",
   "description": "The extension for Veracross student clients.",
   "homepage_url": "https://github.com/emowen/Veracross-Student-Extension",
   "icons": {
@@ -14,7 +14,6 @@
     "128": "images/icon128.png"
   },
   "permissions": [
-    "tabs",
     "storage",
     "notifications",
     "https://portals.veracross.com/"
